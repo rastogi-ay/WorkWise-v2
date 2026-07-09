@@ -36,7 +36,8 @@ function Templates() {
           toastId: 'templates-create-success',
         });
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Request failed';
+        const message =
+          error instanceof Error ? error.message : 'Request failed';
         toast.error(message, {
           toastId: 'templates-create-error',
         });
@@ -52,12 +53,15 @@ function Templates() {
         {usageLimit !== undefined && (
           <>
             <span className="templates-usage__text">
-              <strong>{currentUsage}</strong> of <strong>{usageLimit}</strong> templates used (entitlement limit)
+              <strong>{currentUsage}</strong> of <strong>{usageLimit}</strong>{' '}
+              templates used (entitlement limit)
             </span>
             <div className="templates-usage__bar">
               <div
                 className={`templates-usage__fill ${
-                  currentUsage >= usageLimit ? 'templates-usage__fill--at-limit' : ''
+                  currentUsage >= usageLimit
+                    ? 'templates-usage__fill--at-limit'
+                    : ''
                 }`}
                 style={{
                   width: `${Math.min(100, (currentUsage / usageLimit) * 100)}%`,
@@ -76,10 +80,7 @@ function Templates() {
           onChange={(e) => setTitle(e.target.value)}
           className="input-field"
         />
-        <button
-          onClick={handleAdd}
-          className="add-button"
-        >
+        <button onClick={handleAdd} className="add-button">
           Add Template (& report usage to Stigg)
         </button>
       </div>

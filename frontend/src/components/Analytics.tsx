@@ -16,7 +16,8 @@ export default function Analytics() {
         setHiddenMessage(hiddenMessage);
       } catch (error: unknown) {
         setHiddenMessage(null);
-        const message = error instanceof Error ? error.message : 'Request failed';
+        const message =
+          error instanceof Error ? error.message : 'Request failed';
         toast.error(message, {
           toastId: 'analytics-error',
         });
@@ -41,9 +42,7 @@ export default function Analytics() {
             <div className="analytics-card">
               <span className="analytics-card__label">Analytics</span>
               <span className="analytics-card__value">
-                {hiddenMessage
-                  ? hiddenMessage
-                  : '—'}
+                {hiddenMessage ? hiddenMessage : '—'}
               </span>
             </div>
           </div>

@@ -15,14 +15,10 @@ export default function Messages() {
     try {
       const result = await sendMessage(getToken);
       setMessage('');
-      toast.success(result.message,
-        { toastId: 'messages-send-success' }
-      );
+      toast.success(result.message, { toastId: 'messages-send-success' });
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Request failed';
-      toast.error(msg,
-        { toastId: 'messages-send-error' }
-      );
+      toast.error(msg, { toastId: 'messages-send-error' });
     }
   };
 

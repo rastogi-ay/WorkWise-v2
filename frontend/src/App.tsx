@@ -1,12 +1,19 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from 'react-router-dom';
 import { StiggProvider } from '@stigg/react-sdk';
-import { SignIn, SignUp, useAuth, useUser } from '@clerk/react';
+import { SignIn, SignUp, useAuth } from '@clerk/react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AppNav from './components/AppNav';
 import Templates from './components/Templates';
 import Messages from './components/Messages';
 import Analytics from './components/Analytics';
+import { UserProvider, useSyncedUser } from './UserContext';
 
 function ProtectedLayout() {
   const { isLoaded, isSignedIn } = useAuth();
@@ -17,28 +24,40 @@ function ProtectedLayout() {
   if (!isSignedIn) {
     return <Navigate to="/sign-in" replace />;
   }
-  return <Outlet />;
+  return (
+    <UserProvider>
+      <Outlet />
+    </UserProvider>
+  );
 }
 
 function StiggAndOutlet() {
-  const { isLoaded, user } = useUser();
+  const { user: syncedUser, isLoading } = useSyncedUser();
 
-  if (!isLoaded) {
+  if (isLoading) {
     return <div className="app-loading">Loading…</div>;
   }
 
-  const customerId = user?.id ?? import.meta.env.VITE_STIGG_CUSTOMER_ID;
+  // clerkId of user will always match customerId in Stigg (for simplicity)
+  const customerId = syncedUser?.clerkId;
   if (!customerId) {
     return (
+      // TODO: maybe add a default npc@stigg.io customer?
       <div className="app-loading">
-        Set VITE_STIGG_CUSTOMER_ID or sign in so Stigg has a customer ID.
+        No corresponding customer ID in Stigg was found.
       </div>
     );
   }
 
+  const activeEnv = syncedUser?.environments.find((env) => env.isActive);
+  const apiKey =
+    activeEnv?.clientApiKey ??
+    import.meta.env.VITE_DEFAULT_STIGG_CLIENT_API_KEY;
+
   return (
     <StiggProvider
-      apiKey={import.meta.env.VITE_STIGG_CLIENT_API_KEY}
+      key={activeEnv?.name ?? 'default'}
+      apiKey={apiKey}
       customerId={customerId}
     >
       <AppNav />
@@ -50,6 +69,7 @@ function StiggAndOutlet() {
 export default function App() {
   return (
     <BrowserRouter>
+      {/* TODO: potentially get rid of ToastContainer */}
       <ToastContainer position="top-right" theme="dark" />
       <Routes>
         <Route

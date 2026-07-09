@@ -1,0 +1,93 @@
+.env-switcher {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 0.75rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid #333;
+}
+
+.env-switcher__select {
+  padding: 0.4rem 0.6rem;
+  background-color: #252525;
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #333;
+  border-radius: 6px;
+}
+
+.env-switcher__manage-toggle {
+  padding: 0.4rem 0.75rem;
+  background-color: #252525;
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid #333;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.env-switcher__manage-toggle:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.env-switcher__panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 260px;
+  padding: 0.75rem;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+}
+
+.env-switcher__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.env-switcher__row button {
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  color: #f87171;
+  border: 1px solid #333;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.env-switcher__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #333;
+}
+
+.env-switcher__form input {
+  padding: 0.4rem 0.6rem;
+  background-color: #252525;
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #333;
+  border-radius: 6px;
+}
+
+.env-switcher__form button {
+  padding: 0.4rem 0.75rem;
+  background-color: #646cff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.env-switcher__error {
+  margin: 0;
+  color: #f87171;
+  font-size: 0.85rem;
+}

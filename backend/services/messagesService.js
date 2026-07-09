@@ -1,5 +1,3 @@
-import { stiggClient } from '../stigg.js';
-
 const TEAMS = ['product', 'engineering'];
 
 async function sendMessage(customerId) {
