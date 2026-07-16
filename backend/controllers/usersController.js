@@ -1,5 +1,5 @@
 import express from 'express';
-import syncUser from '../services/usersService.js';
+import { syncUser } from '../services/usersService.js';
 import { toSafeEnvironmentList } from '../services/environmentsService.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { createCustomer } from '../stigg/stiggService.js';
@@ -10,8 +10,10 @@ async function sync(req, res) {
   const clerkId = req.stiggCustomerId;
 
   try {
-    const user = await syncUser(clerkId);
-    await createCustomer(user);
+    const { user, isNewUser } = await syncUser(clerkId);
+    if (isNewUser) {
+      await createCustomer(user);
+    }
 
     return res.status(200).json({
       ...user.toJSON(),

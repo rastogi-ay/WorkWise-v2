@@ -1,7 +1,7 @@
 import { getAuth } from '@clerk/express';
 
 /**
- * Requires a Clerk session. Sets req.stiggCustomerId to the verified user id.
+ * Requires a Clerk session. Sets req.stiggCustomerId to the verified Clerk id.
  * Returns 401 JSON if there is no session (unlike @clerk/express requireAuth(), which redirects browsers).
  */
 export function requireAuth(req, res, next) {

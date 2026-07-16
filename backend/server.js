@@ -3,8 +3,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { clerkMiddleware } from '@clerk/express';
-import templatesController from './controllers/templatesController.js';
-import messagesController from './controllers/messagesController.js';
 import analyticsController from './controllers/analyticsController.js';
 import usersController from './controllers/usersController.js';
 import environmentsController from './controllers/environmentsController.js';
@@ -33,8 +31,6 @@ app.use(express.json());
 // Controllers
 app.use('/api/users', usersController);
 app.use('/api/environments', environmentsController);
-app.use('/api/templates', templatesController);
-app.use('/api/messages', messagesController);
 app.use('/api/analytics', analyticsController);
 
 // Start the server, wait for MongoDB to connect

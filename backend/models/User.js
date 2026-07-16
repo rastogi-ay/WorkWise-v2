@@ -5,7 +5,7 @@ const { Schema } = mongoose;
 const stiggEnvironmentSchema = new Schema(
   {
     clientApiKey: { type: String, required: true },
-    serverApiKey: { type: String, required: true, select: false },
+    serverApiKey: { type: String, required: true },
   },
   { _id: false },
 );
@@ -20,9 +20,19 @@ const userSchema = new Schema(
     environments: {
       type: Map,
       of: stiggEnvironmentSchema,
-      default: () => new Map(),
+      default: () =>
+        new Map([
+          [
+            'Default',
+            {
+              // on the server, the client API key is only used here for initial creation of user
+              clientApiKey: process.env.DEFAULT_STIGG_CLIENT_API_KEY,
+              serverApiKey: process.env.DEFAULT_STIGG_SERVER_API_KEY,
+            },
+          ],
+        ]),
     },
-    activeEnvironment: { type: String, default: null },
+    activeEnvironment: { type: String, default: 'Default' },
   },
   { timestamps: true },
 );

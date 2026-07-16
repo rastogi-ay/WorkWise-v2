@@ -5,9 +5,9 @@ async function syncUser(clerkId) {
   const existing = await User.findOneAndUpdate(
     { clerkId },
     { $set: { lastSeenAt: new Date() } },
-    { new: true },
+    { returnDocument: 'after' },
   );
-  if (existing) return existing;
+  if (existing) return { user: existing, isNewUser: false };
 
   const clerkUser = await clerkClient.users.getUser(clerkId);
   const primaryEmail =
@@ -17,7 +17,7 @@ async function syncUser(clerkId) {
 
   // if the user is signing up for the first time, do a lazy upsert to MongoDB
   try {
-    return await User.findOneAndUpdate(
+    const user = await User.findOneAndUpdate(
       { clerkId },
       {
         $set: {
@@ -28,16 +28,18 @@ async function syncUser(clerkId) {
         },
         $setOnInsert: { clerkId },
       },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: 'after' },
     );
+    return { user, isNewUser: true };
   } catch (err) {
     if (err.code === 11000) {
       // Lost the race to insert — the other concurrent call won; just bump lastSeenAt. This is because of React's StrictMode
-      return User.findOneAndUpdate(
+      const user = await User.findOneAndUpdate(
         { clerkId },
         { $set: { lastSeenAt: new Date() } },
-        { new: true },
+        { returnDocument: 'after' },
       );
+      return { user, isNewUser: false };
     }
     throw err;
   }

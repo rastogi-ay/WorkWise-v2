@@ -10,8 +10,6 @@ import { SignIn, SignUp, useAuth } from '@clerk/react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AppNav from './components/AppNav';
-import Templates from './components/Templates';
-import Messages from './components/Messages';
 import Analytics from './components/Analytics';
 import { UserProvider, useSyncedUser } from './UserContext';
 
@@ -56,7 +54,7 @@ function StiggAndOutlet() {
 
   return (
     <StiggProvider
-      key={activeEnv?.name ?? 'default'}
+      key={activeEnv?.name ?? 'Default'}
       apiKey={apiKey}
       customerId={customerId}
     >
@@ -90,8 +88,7 @@ export default function App() {
         />
         <Route element={<ProtectedLayout />}>
           <Route element={<StiggAndOutlet />}>
-            <Route path="/" element={<Templates />} />
-            <Route path="/messages" element={<Messages />} />
+            <Route path="/" element={<Analytics />} />
             <Route path="/analytics" element={<Analytics />} />
           </Route>
         </Route>

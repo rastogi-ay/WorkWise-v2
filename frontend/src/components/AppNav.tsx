@@ -18,22 +18,6 @@ export default function AppNav() {
             isActive ? 'app-nav__link app-nav__link--active' : 'app-nav__link'
           }
         >
-          Templates
-        </NavLink>
-        <NavLink
-          to="/messages"
-          className={({ isActive }) =>
-            isActive ? 'app-nav__link app-nav__link--active' : 'app-nav__link'
-          }
-        >
-          Messages
-        </NavLink>
-        <NavLink
-          to="/analytics"
-          className={({ isActive }) =>
-            isActive ? 'app-nav__link app-nav__link--active' : 'app-nav__link'
-          }
-        >
           Analytics
         </NavLink>
         <EnvironmentSwitcher />

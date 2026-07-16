@@ -22,7 +22,7 @@ async function addEnvironment(clerkId, name, { clientApiKey, serverApiKey }) {
   const user = await User.findOneAndUpdate(
     { clerkId },
     { $set: { [`environments.${name}`]: { clientApiKey, serverApiKey } } },
-    { new: true },
+    { returnDocument: 'after' },
   );
   if (!user) throw new Error('User not found');
   return toSafeEnvironmentList(user);
@@ -38,7 +38,7 @@ async function removeEnvironment(clerkId, name) {
   }
 
   const updated = await User.findOneAndUpdate({ clerkId }, update, {
-    new: true,
+    returnDocument: 'after',
   });
   return toSafeEnvironmentList(updated);
 }
@@ -54,7 +54,7 @@ async function setActiveEnvironment(clerkId, name) {
   const updated = await User.findOneAndUpdate(
     { clerkId },
     { $set: { activeEnvironment: name } },
-    { new: true },
+    { returnDocument: 'after' },
   );
   return toSafeEnvironmentList(updated);
 }
