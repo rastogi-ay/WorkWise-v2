@@ -6,6 +6,8 @@ import { clerkMiddleware } from '@clerk/express';
 import analyticsController from './controllers/analyticsController.js';
 import usersController from './controllers/usersController.js';
 import environmentsController from './controllers/environmentsController.js';
+import campaignsController from './controllers/campaignsController.js';
+import creditsController from './controllers/creditsController.js';
 
 dotenv.config();
 
@@ -32,6 +34,8 @@ app.use(express.json());
 app.use('/api/users', usersController);
 app.use('/api/environments', environmentsController);
 app.use('/api/analytics', analyticsController);
+app.use('/api/campaigns', campaignsController);
+app.use('/api/credits', creditsController);
 
 // Start the server, wait for MongoDB to connect
 export async function startServer() {

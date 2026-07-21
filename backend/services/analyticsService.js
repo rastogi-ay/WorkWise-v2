@@ -9,9 +9,9 @@ async function getAnalytics(customerId) {
     customerId,
     ANALYTICS_FEATURE_ID,
   );
-  if (!entitlement?.isGranted) {
+  if (!entitlement.isGranted) {
     throw new FeatureDeniedError(
-      `Customer ${customerId} does not have access to analytics: ${entitlement?.accessDeniedReason ?? 'no entitlement found'}`,
+      `Customer ${customerId} does not have access to analytics: ${entitlement.accessDeniedReason ?? 'no entitlement found'}`,
     );
   }
   return entitlement;

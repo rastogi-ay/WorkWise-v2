@@ -20,6 +20,14 @@ export default function AppNav() {
         >
           Analytics
         </NavLink>
+        <NavLink
+          to="/campaigns"
+          className={({ isActive }) =>
+            isActive ? 'app-nav__link app-nav__link--active' : 'app-nav__link'
+          }
+        >
+          Campaigns
+        </NavLink>
         <EnvironmentSwitcher />
         <div className="app-nav__user">
           <UserButton />

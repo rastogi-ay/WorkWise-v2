@@ -11,6 +11,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AppNav from './components/AppNav';
 import Analytics from './components/Analytics';
+import Campaigns from './components/Campaigns';
 import { UserProvider, useSyncedUser } from './UserContext';
 
 function ProtectedLayout() {
@@ -90,6 +91,7 @@ export default function App() {
           <Route element={<StiggAndOutlet />}>
             <Route path="/" element={<Analytics />} />
             <Route path="/analytics" element={<Analytics />} />
+            <Route path="/campaigns" element={<Campaigns />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
