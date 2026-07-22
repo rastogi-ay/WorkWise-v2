@@ -3,7 +3,7 @@ import { withAuthHeaders } from './clerkAuth';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-interface CreateCampaignsResponse {
+interface CreateSequencesResponse {
   access: boolean;
   usageLimit: number | null;
   currentUsage: number | null;
@@ -13,11 +13,11 @@ interface FetchCreditRateResponse {
   amount: number | null;
 }
 
-export const createCampaign = async (
+export const createSequence = async (
   getToken: GetClerkToken,
-): Promise<CreateCampaignsResponse> => {
+): Promise<CreateSequencesResponse> => {
   const headers = await withAuthHeaders(getToken);
-  const response = await fetch(`${API_BASE_URL}/api/campaigns`, {
+  const response = await fetch(`${API_BASE_URL}/api/sequences`, {
     method: 'POST',
     headers,
   });
@@ -30,11 +30,11 @@ export const createCampaign = async (
   return data;
 };
 
-export const fetchCampaignsCreditRate = async (
+export const fetchSequencesCreditRate = async (
   getToken: GetClerkToken,
 ): Promise<FetchCreditRateResponse> => {
   const headers = await withAuthHeaders(getToken);
-  const response = await fetch(`${API_BASE_URL}/api/campaigns/rate`, {
+  const response = await fetch(`${API_BASE_URL}/api/sequences/rate`, {
     headers,
   });
   const data = await response.json();

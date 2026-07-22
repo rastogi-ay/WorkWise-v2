@@ -12,6 +12,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import AppNav from './components/AppNav';
 import Analytics from './components/Analytics';
 import Campaigns from './components/Campaigns';
+import Sequences from './components/Sequences';
 import { UserProvider, useSyncedUser } from './UserContext';
 
 function ProtectedLayout() {
@@ -92,6 +93,7 @@ export default function App() {
             <Route path="/" element={<Analytics />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/campaigns" element={<Campaigns />} />
+            <Route path="/sequences" element={<Sequences />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

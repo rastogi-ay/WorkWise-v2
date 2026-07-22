@@ -1,5 +1,5 @@
 import {
-  CAMPAIGNS_FEATURE_ID,
+  SEQUENCES_FEATURE_ID,
   CREDIT_RATE_MAPPINGS,
   FeatureDeniedError,
   WORKWISE_AI_PRODUCT_ID
@@ -11,23 +11,23 @@ import {
   reportUsage,
 } from '../stigg/stiggService.js';
 
-async function createCampaign(customerId) {
+async function createSequence(customerId) {
   const estimatedUsage = await estimateCreditUsage(
     customerId,
-    CAMPAIGNS_FEATURE_ID,
+    SEQUENCES_FEATURE_ID,
     1,
   );
   if (estimatedUsage.wouldOverdraft) {
     throw new FeatureDeniedError(
-      `Customer ${customerId} does not have sufficient credits to generate a campaign`,
+      `Customer ${customerId} does not have sufficient credits to generate a sequence`,
     );
   }
 
-  const reportedUsage = await reportUsage(customerId, CAMPAIGNS_FEATURE_ID, 1);
+  const reportedUsage = await reportUsage(customerId, SEQUENCES_FEATURE_ID, 1);
   return reportedUsage;
 }
 
-async function getCampaignsCreditRate(customerId) {
+async function getSequencesCreditRate(customerId) {
   const subscriptions = await getSubscriptions(customerId);
   // TODO: better way to do this function? Don't like the "ai" filter
   const planId = subscriptions
@@ -35,17 +35,17 @@ async function getCampaignsCreditRate(customerId) {
     .map((sub) => sub.planId);
   // assumes that the user is subscribed to only one plan with the relevant credit rate
   if (planId.length > 1) {
-    throw new Error("More than one credit rate detected for campaigns");
+    throw new Error("More than one credit rate detected for sequences");
   }
   // TODO: once featureRefId becomes available, remove this
-  const internalFeatureId = CREDIT_RATE_MAPPINGS[CAMPAIGNS_FEATURE_ID];
+  const internalFeatureId = CREDIT_RATE_MAPPINGS[SEQUENCES_FEATURE_ID];
   const creditRate = await getCreditRate(customerId, internalFeatureId, planId[0]);
   if (creditRate === null) {
     throw new FeatureDeniedError(
-      `Customer ${customerId} does not have a credit rate configured for campaigns`,
+      `Customer ${customerId} does not have a credit rate configured for sequences`,
     );
   }
   return creditRate;
 }
 
-export { createCampaign, getCampaignsCreditRate };
+export { createSequence, getSequencesCreditRate };

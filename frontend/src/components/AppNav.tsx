@@ -28,6 +28,14 @@ export default function AppNav() {
         >
           Campaigns
         </NavLink>
+        <NavLink
+          to="/sequences"
+          className={({ isActive }) =>
+            isActive ? 'app-nav__link app-nav__link--active' : 'app-nav__link'
+          }
+        >
+          Sequences
+        </NavLink>
         <EnvironmentSwitcher />
         <div className="app-nav__user">
           <UserButton />
