@@ -9,11 +9,17 @@ import { StiggProvider } from '@stigg/react-sdk';
 import { SignIn, SignUp, useAuth } from '@clerk/react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import AppNav from './components/AppNav';
+import Sidebar from './components/Sidebar';
 import Analytics from './components/Analytics';
 import Campaigns from './components/Campaigns';
 import Sequences from './components/Sequences';
 import { UserProvider, useSyncedUser } from './UserContext';
+import { ThemeProvider, useTheme } from './ThemeContext';
+
+function ThemedToastContainer() {
+  const { theme } = useTheme();
+  return <ToastContainer position="top-right" theme={theme} />;
+}
 
 function ProtectedLayout() {
   const { isLoaded, isSignedIn } = useAuth();
@@ -60,44 +66,50 @@ function StiggAndOutlet() {
       apiKey={apiKey}
       customerId={customerId}
     >
-      <AppNav />
-      <Outlet />
+      <div className="app-shell">
+        <Sidebar />
+        <main className="app-shell__content">
+          <Outlet />
+        </main>
+      </div>
     </StiggProvider>
   );
 }
 
 export default function App() {
   return (
-    <BrowserRouter>
-      {/* TODO: potentially get rid of ToastContainer */}
-      <ToastContainer position="top-right" theme="dark" />
-      <Routes>
-        <Route
-          path="/sign-in/*"
-          element={
-            <div className="clerk-auth-shell">
-              <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" />
-            </div>
-          }
-        />
-        <Route
-          path="/sign-up/*"
-          element={
-            <div className="clerk-auth-shell">
-              <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" />
-            </div>
-          }
-        />
-        <Route element={<ProtectedLayout />}>
-          <Route element={<StiggAndOutlet />}>
-            <Route path="/" element={<Analytics />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/campaigns" element={<Campaigns />} />
-            <Route path="/sequences" element={<Sequences />} />
+    <ThemeProvider>
+      <BrowserRouter>
+        {/* TODO: potentially get rid of ToastContainer */}
+        <ThemedToastContainer />
+        <Routes>
+          <Route
+            path="/sign-in/*"
+            element={
+              <div className="clerk-auth-shell">
+                <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" />
+              </div>
+            }
+          />
+          <Route
+            path="/sign-up/*"
+            element={
+              <div className="clerk-auth-shell">
+                <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" />
+              </div>
+            }
+          />
+          <Route element={<ProtectedLayout />}>
+            <Route element={<StiggAndOutlet />}>
+              <Route path="/" element={<Analytics />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/campaigns" element={<Campaigns />} />
+              <Route path="/sequences" element={<Sequences />} />
+            </Route>
           </Route>
-        </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }

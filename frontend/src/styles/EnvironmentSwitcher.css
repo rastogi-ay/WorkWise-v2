@@ -3,45 +3,51 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-left: 0.75rem;
-  padding-left: 0.75rem;
-  border-left: 1px solid #333;
+  width: 100%;
 }
 
 .env-switcher__select {
-  padding: 0.4rem 0.6rem;
-  background-color: #252525;
-  color: rgba(255, 255, 255, 0.9);
-  border: 1px solid #333;
-  border-radius: 6px;
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem 0.6rem;
+  background-color: var(--color-surface-alt);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.85rem;
 }
 
 .env-switcher__manage-toggle {
-  padding: 0.4rem 0.75rem;
-  background-color: #252525;
-  color: rgba(255, 255, 255, 0.7);
-  border: 1px solid #333;
-  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 .env-switcher__manage-toggle:hover {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text);
+  border-color: var(--color-accent);
 }
 
 .env-switcher__panel {
   position: absolute;
-  top: calc(100% + 0.5rem);
+  bottom: calc(100% + 0.5rem);
+  left: 0;
   right: 0;
   z-index: 10;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  min-width: 260px;
+  min-width: 240px;
   padding: 0.75rem;
-  background-color: #1a1a1a;
-  border: 1px solid #333;
-  border-radius: 8px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
 }
 
 .env-switcher__row {
@@ -49,15 +55,16 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text);
+  font-size: 0.85rem;
 }
 
 .env-switcher__row button {
   padding: 0.25rem 0.5rem;
   background: transparent;
-  color: #f87171;
-  border: 1px solid #333;
-  border-radius: 4px;
+  color: var(--color-danger);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
   cursor: pointer;
 }
 
@@ -66,20 +73,21 @@
   flex-direction: column;
   gap: 0.4rem;
   padding-top: 0.5rem;
-  border-top: 1px solid #333;
+  border-top: 1px solid var(--color-border);
 }
 
 .env-switcher__form input {
   padding: 0.4rem 0.6rem;
-  background-color: #252525;
-  color: rgba(255, 255, 255, 0.9);
-  border: 1px solid #333;
+  background-color: var(--color-surface-alt);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
+  font-size: 0.85rem;
 }
 
 .env-switcher__form button {
   padding: 0.4rem 0.75rem;
-  background-color: #646cff;
+  background: var(--color-accent-gradient);
   color: white;
   border: none;
   border-radius: 6px;
@@ -88,6 +96,6 @@
 
 .env-switcher__error {
   margin: 0;
-  color: #f87171;
+  color: var(--color-danger);
   font-size: 0.85rem;
 }

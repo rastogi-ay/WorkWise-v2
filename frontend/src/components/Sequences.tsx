@@ -5,6 +5,7 @@ import '../styles/App.css';
 import '../styles/Sequences.css';
 import { createSequence, fetchSequencesCreditRate } from '../api/sequencesApi';
 import { fetchCreditBalance } from '../api/creditsApi';
+import { MailIcon, CoinIcon, LayersIcon } from '../styles/icons';
 
 interface SequencesUsage {
   usageLimit: number | null;
@@ -40,10 +41,10 @@ export default function Sequences() {
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
   const [usage, setUsage] = useState<SequencesUsage | null>(null);
   const [creditRate, setCreditRate] = useState<number | null>(null);
-  const [animate, setAnimate] = useState(false);
   const [sequences, setSequences] = useState<Sequence[]>([]);
   const [isCreating, setIsCreating] = useState(false);
-  const [dismissedCreditsModal, setDismissedCreditsModal] = useState(false);
+  const [dismissedCreditsBanner, setDismissedCreditsBanner] = useState(false);
+  const [animateBar, setAnimateBar] = useState(false);
 
   useEffect(() => {
     async function loadPage() {
@@ -77,12 +78,14 @@ export default function Sequences() {
   }, [getToken]);
 
   useEffect(() => {
-    const id = requestAnimationFrame(() => setAnimate(true));
+    const id = requestAnimationFrame(() => setAnimateBar(true));
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const balance = usage ? (usage.usageLimit ?? 0) - (usage.currentUsage ?? 0) : 0;
-  const showCreditsModal = hasAccess === false && !dismissedCreditsModal;
+  const limit = usage?.usageLimit ?? 0;
+  const used = usage?.currentUsage ?? 0;
+  const percentUsed = limit > 0 ? Math.min(100, Math.max(0, (used / limit) * 100)) : 0;
+  const showCreditsBanner = hasAccess === false && !dismissedCreditsBanner;
 
   async function handleCreateSequence() {
     setIsCreating(true);
@@ -109,104 +112,107 @@ export default function Sequences() {
 
   return (
     <div className="app sequences-page">
-      <h1>Sequences</h1>
-      <div className="sequences-content-wrapper">
-        {showCreditsModal && (
-          <div className="sequences-modal-backdrop">
-            <div className="sequences-modal">
-              <button
-                type="button"
-                className="sequences-modal__close"
-                onClick={() => setDismissedCreditsModal(true)}
-                aria-label="Close"
-              >
-                ×
-              </button>
-              <h2 className="sequences-modal__title">Not enough credits</h2>
-              <p className="sequences-modal__body">
-                Creating a sequence requires{' '}
-                {creditRate !== null ? creditRate : '—'} credits, but you
-                currently have {balance} credit{balance === 1 ? '' : 's'}.
-              </p>
+      <div className="page-header">
+        <span className="page-header__icon">
+          <MailIcon />
+        </span>
+        <div className="page-header__text">
+          <h1 className="page-header__title">AI Sequence Generator</h1>
+          <p className="page-header__subtitle">
+            Generate intelligent marketing campaigns powered by advanced AI
+            algorithms
+          </p>
+        </div>
+      </div>
+
+      {showCreditsBanner && (
+        <div className="credits-banner">
+          <span>
+            You&apos;ve reached your credit limit. Upgrade your plan to
+            generate more sequences.
+          </span>
+          <button
+            type="button"
+            className="credits-banner__close"
+            onClick={() => setDismissedCreditsBanner(true)}
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      <div className="generator-panel">
+        {usage && (
+          <div className="credit-stat">
+            <span className="credit-stat__icon">
+              <CoinIcon />
+            </span>
+            <div className="credit-stat__text">
+              <span className="credit-stat__label">Platform credits</span>
+              <span className="credit-stat__value">
+                {used} / {limit}
+              </span>
+              <div className="credit-stat__bar">
+                <div
+                  className="credit-stat__bar-fill"
+                  style={{ width: animateBar ? `${percentUsed}%` : '0%' }}
+                />
+              </div>
             </div>
           </div>
         )}
-        <div className="sequences-content">
-          {usage &&
-            (() => {
-              const limit = usage.usageLimit ?? 0;
-              const used = usage.currentUsage ?? 0;
-              const percentUsed =
-                limit > 0
-                  ? Math.min(100, Math.max(0, (used / limit) * 100))
-                  : 0;
 
-              return (
-                <div className="sequences-usage">
-                  <div className="sequences-usage__header">
-                    <span className="sequences-usage__label">
-                      Credit balance
-                    </span>
-                    <span className="sequences-usage__value">
-                      {limit - used}
-                    </span>
-                  </div>
-                  <div className="sequences-usage-bar">
-                    <div
-                      className="sequences-usage-bar__fill"
-                      style={{ width: animate ? `${percentUsed}%` : '0%' }}
-                    />
-                  </div>
-                </div>
-              );
-            })()}
-
-          <div className="sequences-create">
-            <button
-              type="button"
-              className="sequences-create__button"
-              onClick={handleCreateSequence}
-              disabled={isCreating || creditRate === null}
-            >
-              {isCreating ? 'Creating…' : 'New Sequence'}
-            </button>
-            {creditRate !== null ? (
-              <span className="sequences-create__rate">
-                Costs {creditRate} {creditRate === 1 ? 'credit' : 'credits'}
-              </span>
-            ) : (
-              <span className="sequences-create__rate">
-                Sequence cost unavailable
-              </span>
-            )}
-          </div>
-
-          <div className="sequences-list">
-            {sequences.map((sequence, index) => (
-              <div
-                className={
-                  animate ? 'sequence-card sequence-card--in' : 'sequence-card'
-                }
-                key={`${sequence.name}-${index}`}
-                style={{ transitionDelay: `${index * 80}ms` }}
-              >
-                <div className="sequence-card__header">
-                  <span className="sequence-card__name">{sequence.name}</span>
-                  <span
-                    className={`sequence-card__status sequence-card__status--${sequence.status.toLowerCase()}`}
-                  >
-                    {sequence.status}
-                  </span>
-                </div>
-                <div className="sequence-card__stats">
-                  <span>{sequence.sent.toLocaleString()} sent</span>
-                  <span>{sequence.openRate} open rate</span>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="generator-panel__action">
+          <button
+            type="button"
+            className="generate-button"
+            onClick={handleCreateSequence}
+            disabled={isCreating || creditRate === null}
+          >
+            {isCreating ? 'Generating…' : 'Generate AI Sequence'}
+          </button>
+          {creditRate !== null && (
+            <span className="rate-pill">
+              {creditRate} {creditRate === 1 ? 'credit' : 'credits'}
+            </span>
+          )}
         </div>
       </div>
+
+      <h2 className="section-title">Generated Sequences</h2>
+
+      {sequences.length === 0 ? (
+        <div className="empty-state">
+          <span className="empty-state__icon">
+            <LayersIcon size={22} />
+          </span>
+          <p className="empty-state__title">No sequences yet</p>
+          <p className="empty-state__body">
+            Generate your first AI-powered campaign. The engine analyzes
+            market trends and builds a strategy in seconds.
+          </p>
+        </div>
+      ) : (
+        <div className="sequences-list">
+          {sequences.map((sequence, index) => (
+            <div className="sequence-card" key={`${sequence.name}-${index}`}>
+              <div className="sequence-card__header">
+                <span className="sequence-card__name">{sequence.name}</span>
+                <span
+                  className={`sequence-card__status sequence-card__status--${sequence.status.toLowerCase()}`}
+                >
+                  {sequence.status}
+                </span>
+              </div>
+              <div className="sequence-card__stats">
+                <span>{sequence.sent.toLocaleString()} sent</span>
+                <span>{sequence.openRate} open rate</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
