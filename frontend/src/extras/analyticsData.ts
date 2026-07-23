@@ -57,6 +57,11 @@ export const PRODUCTIVITY_PATTERN: LinePoint[] = [
   { hour: '4PM', value: 85 },
 ];
 
+export const PEAK_PRODUCTIVITY_POINT = PRODUCTIVITY_PATTERN.reduce(
+  (max, point) => (point.value > max.value ? point : max),
+  PRODUCTIVITY_PATTERN[0],
+);
+
 export function formatHourLabel(hour: string) {
   const match = hour.match(/^(\d+)(AM|PM)$/);
   if (!match) return hour;

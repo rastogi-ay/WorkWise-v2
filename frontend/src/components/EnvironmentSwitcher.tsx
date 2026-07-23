@@ -1,11 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { useAuth } from '@clerk/react';
 import { useSyncedUser } from '../UserContext';
-import {
-  addEnvironment,
-  removeEnvironment,
-  setActiveEnvironment,
-} from '../api/environmentsApi';
+import { addEnvironment, removeEnvironment, setActiveEnvironment } from '../api/environmentsApi';
 import '../styles/EnvironmentSwitcher.css';
 
 export default function EnvironmentSwitcher() {
@@ -26,9 +22,7 @@ export default function EnvironmentSwitcher() {
       await setActiveEnvironment(getToken, value === '' ? null : value);
       refetch();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to switch environment',
-      );
+      setError(err instanceof Error ? err.message : 'Failed to switch environment');
     }
   }
 
@@ -42,9 +36,7 @@ export default function EnvironmentSwitcher() {
       setServerApiKey('');
       refetch();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to add environment',
-      );
+      setError(err instanceof Error ? err.message : 'Failed to add environment');
     }
   }
 
@@ -54,9 +46,7 @@ export default function EnvironmentSwitcher() {
       await removeEnvironment(getToken, envName);
       refetch();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to remove environment',
-      );
+      setError(err instanceof Error ? err.message : 'Failed to remove environment');
     }
   }
 

@@ -5,7 +5,8 @@ async function getCreditBalance(customerId) {
   const entitlement = await getCreditEntitlement(customerId, CREDIT_CURRENCY);
   if (!entitlement.isGranted) {
     throw new FeatureDeniedError(
-      `Customer ${customerId} does not have access to credits: ${entitlement.accessDeniedReason ?? 'no entitlement found'}`,
+      `Customer ${customerId} does not have access to credits`,
+      entitlement
     );
   }
   return entitlement;

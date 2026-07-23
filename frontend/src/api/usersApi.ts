@@ -21,9 +21,7 @@ export interface SyncedUser {
 }
 
 // grabs the state of the user from MongoDB
-export const syncUser = async (
-  getToken: GetClerkToken,
-): Promise<SyncedUser> => {
+export const syncUser = async (getToken: GetClerkToken): Promise<SyncedUser> => {
   const headers = await withAuthHeaders(getToken, {
     'Content-Type': 'application/json',
   });

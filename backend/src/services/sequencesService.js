@@ -13,6 +13,7 @@ async function createSequence(customerId) {
   if (estimatedUsage.wouldOverdraft) {
     throw new FeatureDeniedError(
       `Customer ${customerId} does not have sufficient credits to generate a sequence`,
+      estimatedUsage
     );
   }
 
@@ -30,7 +31,7 @@ async function getSequencesCreditRate(customerId) {
     1,
   );
   const creditRate = estimatedUsage.breakdown[0].cost;
-  if (creditRate === null) {
+  if (creditRate == null) {
     throw new FeatureDeniedError(
       `Customer ${customerId} does not have a credit rate configured for sequences`,
     );

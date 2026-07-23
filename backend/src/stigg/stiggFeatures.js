@@ -11,9 +11,14 @@ export const WORKWISE_PLANNER_PRODUCT_ID = 'product-work-wise-planner';
 
 // Error class for feature denied errors to be thrown after entitlement checks
 export class FeatureDeniedError extends Error {
-  constructor(message) {
-    super();
+  constructor(message, details = null) {
+    // Append the details to the message string directly
+    const fullMessage = details 
+      ? `${message} | Details: ${JSON.stringify(details)}` 
+      : message;
+
+    super(fullMessage);
     this.name = 'FeatureDeniedError';
-    this.message = message;
+    this.details = details;
   }
 }

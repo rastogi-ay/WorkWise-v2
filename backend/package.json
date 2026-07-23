@@ -2,11 +2,11 @@
   "name": "node-api",
   "version": "1.0.0",
   "description": "Node API Backend",
-  "main": "index.js",
+  "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node --watch index.js",
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

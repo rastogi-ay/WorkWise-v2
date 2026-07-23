@@ -1,25 +1,12 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  Outlet,
-} from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { StiggProvider } from '@stigg/react-sdk';
 import { SignIn, SignUp, useAuth } from '@clerk/react';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import Sidebar from './components/Sidebar';
 import Analytics from './components/Analytics';
 import Campaigns from './components/Campaigns';
 import Sequences from './components/Sequences';
 import { UserProvider, useSyncedUser } from './UserContext';
-import { ThemeProvider, useTheme } from './ThemeContext';
-
-function ThemedToastContainer() {
-  const { theme } = useTheme();
-  return <ToastContainer position="top-right" theme={theme} />;
-}
+import { ThemeProvider } from './ThemeContext';
 
 function ProtectedLayout() {
   const { isLoaded, isSignedIn } = useAuth();
@@ -49,23 +36,15 @@ function StiggAndOutlet() {
   if (!customerId) {
     return (
       // TODO: maybe add a default npc@stigg.io customer?
-      <div className="app-loading">
-        No corresponding customer ID in Stigg was found.
-      </div>
+      <div className="app-loading">No corresponding customer ID in Stigg was found.</div>
     );
   }
 
   const activeEnv = syncedUser?.environments.find((env) => env.isActive);
-  const apiKey =
-    activeEnv?.clientApiKey ??
-    import.meta.env.VITE_DEFAULT_STIGG_CLIENT_API_KEY;
+  const apiKey = activeEnv?.clientApiKey ?? import.meta.env.VITE_DEFAULT_STIGG_CLIENT_API_KEY;
 
   return (
-    <StiggProvider
-      key={activeEnv?.name ?? 'Default'}
-      apiKey={apiKey}
-      customerId={customerId}
-    >
+    <StiggProvider key={activeEnv?.name ?? 'Default'} apiKey={apiKey} customerId={customerId}>
       <div className="app-shell">
         <Sidebar />
         <main className="app-shell__content">
@@ -80,8 +59,6 @@ export default function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
-        {/* TODO: potentially get rid of ToastContainer */}
-        <ThemedToastContainer />
         <Routes>
           <Route
             path="/sign-in/*"

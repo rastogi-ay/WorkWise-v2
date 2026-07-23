@@ -8,9 +8,7 @@ interface EnvironmentsResponse {
   environments: SyncedEnvironment[];
 }
 
-async function handleResponse(
-  response: Response,
-): Promise<EnvironmentsResponse> {
+async function handleResponse(response: Response): Promise<EnvironmentsResponse> {
   const data = await response.json();
   if (!response.ok) {
     throw new Error(`${response.status}: ${data.error}`);
@@ -18,9 +16,7 @@ async function handleResponse(
   return data;
 }
 
-export const listEnvironments = async (
-  getToken: GetClerkToken,
-): Promise<EnvironmentsResponse> => {
+export const listEnvironments = async (getToken: GetClerkToken): Promise<EnvironmentsResponse> => {
   const headers = await withAuthHeaders(getToken);
   const response = await fetch(`${API_BASE_URL}/api/environments`, { headers });
   return handleResponse(response);
@@ -48,13 +44,10 @@ export const removeEnvironment = async (
   name: string,
 ): Promise<EnvironmentsResponse> => {
   const headers = await withAuthHeaders(getToken);
-  const response = await fetch(
-    `${API_BASE_URL}/api/environments/${encodeURIComponent(name)}`,
-    {
-      method: 'DELETE',
-      headers,
-    },
-  );
+  const response = await fetch(`${API_BASE_URL}/api/environments/${encodeURIComponent(name)}`, {
+    method: 'DELETE',
+    headers,
+  });
   return handleResponse(response);
 };
 

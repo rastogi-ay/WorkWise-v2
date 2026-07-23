@@ -69,7 +69,9 @@
   text-decoration: none;
   font-weight: 500;
   font-size: 0.92rem;
-  transition: color 0.15s, background-color 0.15s;
+  transition:
+    color 0.15s,
+    background-color 0.15s;
 }
 
 .sidebar__link-icon {

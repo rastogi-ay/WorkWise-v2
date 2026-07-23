@@ -19,13 +19,12 @@ async function fetchAnalytics(req, res) {
       console.log(error.message);
       return res.status(403).json({
         access: false,
-        error: 'You do not have access to analytics. Please upgrade your plan.',
       });
     }
     console.error('Failed to get analytics:', error);
     return res.status(500).json({
       access: false,
-      error: 'Failed to get analytics',
+      error: 'Failed to get analytics.',
     });
   }
 }

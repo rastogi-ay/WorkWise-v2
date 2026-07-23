@@ -61,7 +61,13 @@ export function LineChart({ data, animate }: { data: LinePoint[]; animate: boole
               y2={y}
               className="line-chart__grid"
             />
-            <text x={paddingLeft - 10} y={y} textAnchor="end" dominantBaseline="middle" className="line-chart__axis-label">
+            <text
+              x={paddingLeft - 10}
+              y={y}
+              textAnchor="end"
+              dominantBaseline="middle"
+              className="line-chart__axis-label"
+            >
               {tick}%
             </text>
           </g>
@@ -74,7 +80,9 @@ export function LineChart({ data, animate }: { data: LinePoint[]; animate: boole
           y={height - 6}
           textAnchor="middle"
           className="line-chart__axis-label"
-          style={{ opacity: index === 0 || index === points.length - 1 || index % 2 === 1 ? 1 : 0.7 }}
+          style={{
+            opacity: index === 0 || index === points.length - 1 || index % 2 === 1 ? 1 : 0.7,
+          }}
         >
           {point.hour}
         </text>

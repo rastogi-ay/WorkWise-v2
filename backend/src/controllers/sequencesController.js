@@ -21,13 +21,12 @@ async function addSequence(req, res) {
       console.log(error.message);
       return res.status(403).json({
         access: false,
-        error: 'You have reached your credit limit. Please upgrade your plan.',
       });
     }
     console.error('Failed to create sequence:', error);
     return res.status(500).json({
       access: false,
-      error: 'Failed to create sequence',
+      error: 'Failed to create sequence.',
     });
   }
 }
@@ -39,6 +38,7 @@ async function fetchSequencesCreditRate(req, res) {
     const rate = await sequencesService.getSequencesCreditRate(customerId);
     console.log('Sequences Credit Rate:', rate);
     return res.status(200).json({
+      access: true,
       rate,
     });
   } catch (error) {
@@ -46,13 +46,12 @@ async function fetchSequencesCreditRate(req, res) {
       console.log(error.message);
       return res.status(403).json({
         access: false,
-        error: 'No credit rate found on subscribed plan.',
       });
     }
     console.error('Failed to get sequence credit rate:', error);
     return res.status(500).json({
       access: false,
-      error: 'Failed to get sequence credit rate',
+      error: 'Failed to get sequence credit rate.',
     });
   }
 }

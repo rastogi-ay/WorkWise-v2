@@ -4,6 +4,7 @@
 }
 
 .app-shell__content {
+  position: relative;
   flex: 1;
   min-width: 0;
   overflow-y: auto;
@@ -28,6 +29,18 @@ h1 {
   text-align: center;
   color: var(--color-text-secondary);
   font-size: 1rem;
+}
+
+.page-content-wrapper {
+  /* deliberately not positioned — the modal backdrop should size itself
+     against .app-shell__content (the whole main pane), not just this wrapper */
+}
+
+.page-content--blurred {
+  filter: blur(3px);
+  opacity: 0.75;
+  pointer-events: none;
+  user-select: none;
 }
 
 .page-header {
@@ -121,8 +134,11 @@ h1 {
 }
 
 .credit-stat__value {
+  display: block;
+  min-width: 6ch;
   font-size: 1.4rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--color-text);
 }
 
@@ -151,7 +167,9 @@ h1 {
 .generate-button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
+  min-width: 12rem;
   padding: 0.7rem 1.4rem;
   border-radius: 10px;
   border: none;
@@ -181,6 +199,11 @@ h1 {
   font-size: 0.85rem;
   font-weight: 600;
   white-space: nowrap;
+}
+
+.rate-pill--error {
+  background-color: var(--color-danger-soft);
+  color: var(--color-danger);
 }
 
 .section-title {
@@ -226,27 +249,4 @@ h1 {
   max-width: 360px;
   color: var(--color-text-secondary);
   font-size: 0.9rem;
-}
-
-.credits-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.85rem 1.25rem;
-  margin-bottom: 1.5rem;
-  background-color: var(--color-danger-soft);
-  border: 1px solid color-mix(in srgb, var(--color-danger) 35%, transparent);
-  border-radius: var(--radius-md);
-  color: var(--color-text);
-}
-
-.credits-banner__close {
-  padding: 0.2rem 0.5rem;
-  background: transparent;
-  border: none;
-  color: var(--color-text-secondary);
-  font-size: 1.1rem;
-  line-height: 1;
-  cursor: pointer;
 }

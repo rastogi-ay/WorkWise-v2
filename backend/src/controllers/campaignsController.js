@@ -21,13 +21,12 @@ async function addCampaign(req, res) {
       console.log(error.message);
       return res.status(403).json({
         access: false,
-        error: 'You have reached your credit limit. Please upgrade your plan.',
       });
     }
     console.error('Failed to create campaign:', error);
     return res.status(500).json({
       access: false,
-      error: 'Failed to create campaign',
+      error: 'Failed to create campaign.',
     });
   }
 }
@@ -39,6 +38,7 @@ async function fetchCampaignsCreditRate(req, res) {
     const rate = await campaignsService.getCampaignsCreditRate(customerId);
     console.log('Campaigns Credit Rate:', rate);
     return res.status(200).json({
+      access: true,
       rate,
     });
   } catch (error) {
@@ -51,8 +51,7 @@ async function fetchCampaignsCreditRate(req, res) {
     }
     console.error('Failed to get campaign credit rate:', error);
     return res.status(500).json({
-      access: false,
-      error: 'Failed to get campaign credit rate',
+      error: 'Failed to get campaign credit rate.',
     });
   }
 }

@@ -1,0 +1,91 @@
+.paywall-backdrop {
+  /* absolute against .app-shell__content (the whole main pane, header
+     included) — not fixed to the viewport, so the sidebar stays undimmed. */
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  z-index: 100;
+  background-color: rgba(10, 8, 20, 0.4);
+  /* let clicks fall through the dim layer to whatever's behind it */
+  pointer-events: none;
+}
+
+.paywall-modal {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 2.25rem 1.75rem 1.75rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+  pointer-events: auto;
+}
+
+.paywall-modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.paywall-modal__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: var(--color-accent-gradient);
+  color: white;
+}
+
+.paywall-modal__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.paywall-modal__message {
+  margin: 0;
+  padding: 0.9rem 1.1rem;
+  background-color: var(--color-accent-soft);
+  color: var(--color-accent);
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.paywall-modal__cta {
+  padding: 0.7rem 1.85rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-accent-gradient);
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.paywall-modal__cta:hover {
+  filter: brightness(1.08);
+}

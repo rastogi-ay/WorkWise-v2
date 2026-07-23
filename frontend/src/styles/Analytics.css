@@ -7,17 +7,6 @@
   text-align: left;
 }
 
-.analytics-content-wrapper {
-  position: relative;
-}
-
-.analytics-content--blurred {
-  filter: blur(3px);
-  opacity: 0.75;
-  pointer-events: none;
-  user-select: none;
-}
-
 .analytics-cards {
   display: flex;
   gap: 1.5rem;
@@ -38,7 +27,9 @@
   gap: 1rem;
   opacity: 0;
   transform: translateY(10px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
 }
 
 .analytics-card--in {
@@ -235,7 +226,9 @@
   fill: var(--color-surface);
   stroke: var(--color-accent);
   stroke-width: 2.5;
-  transition: r 0.15s ease, opacity 0.3s ease;
+  transition:
+    r 0.15s ease,
+    opacity 0.3s ease;
 }
 
 .line-chart__dot:hover {

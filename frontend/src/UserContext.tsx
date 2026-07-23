@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useAuth } from '@clerk/react';
 import { syncUser, type SyncedUser } from './api/usersApi';
 
@@ -55,9 +48,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   useEffect(() => fetchUser(), [fetchUser]);
 
   return (
-    <UserContext.Provider value={{ ...state, refetch: fetchUser }}>
-      {children}
-    </UserContext.Provider>
+    <UserContext.Provider value={{ ...state, refetch: fetchUser }}>{children}</UserContext.Provider>
   );
 }
 

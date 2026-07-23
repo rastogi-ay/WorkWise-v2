@@ -1,36 +1,30 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/react';
-import { toast } from 'react-toastify';
 import '../styles/App.css';
 import '../styles/Analytics.css';
 import { fetchAnalytics } from '../api/analyticsApi';
 import { ClockIcon } from '../extras/icons';
-import { STATS, APP_DISTRIBUTION, PRODUCTIVITY_PATTERN, formatHourLabel } from '../extras/analyticsData';
+import {
+  STATS,
+  APP_DISTRIBUTION,
+  PRODUCTIVITY_PATTERN,
+  PEAK_PRODUCTIVITY_POINT,
+  formatHourLabel,
+} from '../extras/analyticsData';
 import { DonutChart } from '../extras/DonutChart';
 import { LineChart } from '../extras/LineChart';
+import { AccessDeniedModal } from './AccessDeniedModal';
+import { useEntitlement } from '../hooks/useEntitlement';
 
 export default function Analytics() {
   const { getToken } = useAuth();
-  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+  const analytics = useEntitlement(() => fetchAnalytics(getToken), [getToken]);
   const [animate, setAnimate] = useState(false);
 
-  useEffect(() => {
-    async function loadPage() {
-      try {
-        await fetchAnalytics(getToken);
-        setHasAccess(true);
-      } catch (error: unknown) {
-        setHasAccess(false);
-        const message =
-          error instanceof Error ? error.message : 'Request failed';
-        toast.error(message, {
-          toastId: 'analytics-error',
-        });
-      }
-    }
-
-    loadPage();
-  }, [getToken]);
+  const hasAccess = analytics.status === 'granted';
+  const loadError = analytics.status === 'error';
+  const denied = analytics.status === 'denied';
+  const showModal = loadError || denied;
 
   useEffect(() => {
     if (!hasAccess) return;
@@ -38,28 +32,15 @@ export default function Analytics() {
     return () => cancelAnimationFrame(id);
   }, [hasAccess]);
 
-  const peak = PRODUCTIVITY_PATTERN.reduce(
-    (max, point) => (point.value > max.value ? point : max),
-    PRODUCTIVITY_PATTERN[0],
-  );
-
   return (
     <div className="app analytics-page">
       <h1 className="analytics-title">Analytics</h1>
-      <div className="analytics-content-wrapper">
-        <div
-          className={
-            hasAccess
-              ? 'analytics-content'
-              : 'analytics-content analytics-content--blurred'
-          }
-        >
+      <div className="page-content-wrapper">
+        <div className={showModal ? 'page-content page-content--blurred' : 'page-content'}>
           <div className="analytics-cards">
             {STATS.map((stat, index) => (
               <div
-                className={
-                  animate ? 'analytics-card analytics-card--in' : 'analytics-card'
-                }
+                className={animate ? 'analytics-card analytics-card--in' : 'analytics-card'}
                 key={stat.key}
                 style={{ transitionDelay: `${index * 80}ms` }}
               >
@@ -69,9 +50,7 @@ export default function Analytics() {
                 <div className="analytics-card__text">
                   <span className="analytics-card__label">{stat.label}</span>
                   <span className="analytics-card__value">{stat.value}</span>
-                  <span
-                    className={`analytics-card__pill analytics-card__pill--${stat.tone}`}
-                  >
+                  <span className={`analytics-card__pill analytics-card__pill--${stat.tone}`}>
                     {stat.delta}
                   </span>
                 </div>
@@ -90,7 +69,7 @@ export default function Analytics() {
                 <h2 className="analytics-panel__title">Daily Productivity Pattern</h2>
                 <span className="analytics-panel__peak">
                   <ClockIcon size={14} />
-                  Peak: {formatHourLabel(peak.hour)}
+                  Peak: {formatHourLabel(PEAK_PRODUCTIVITY_POINT.hour)}
                 </span>
               </div>
               <div className="line-chart-wrap">
@@ -99,6 +78,13 @@ export default function Analytics() {
             </div>
           </div>
         </div>
+
+        {showModal && (
+          <AccessDeniedModal
+            status={loadError ? 'error' : 'denied'}
+            featureName="detailed productivity insights and analytics"
+          />
+        )}
       </div>
     </div>
   );
