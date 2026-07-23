@@ -5,7 +5,7 @@ import '../styles/App.css';
 import '../styles/Sequences.css';
 import { createSequence, fetchSequencesCreditRate } from '../api/sequencesApi';
 import { fetchCreditBalance } from '../api/creditsApi';
-import { MailIcon, CoinIcon, LayersIcon } from '../styles/icons';
+import { MailIcon, CoinIcon, LayersIcon } from '../extras/icons';
 
 interface SequencesUsage {
   usageLimit: number | null;

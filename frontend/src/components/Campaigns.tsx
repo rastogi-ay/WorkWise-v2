@@ -5,7 +5,7 @@ import '../styles/App.css';
 import '../styles/Campaigns.css';
 import { createCampaign, fetchCampaignsCreditRate } from '../api/campaignsApi';
 import { fetchCreditBalance } from '../api/creditsApi';
-import { MegaphoneIcon, CoinIcon, ChartIcon } from '../styles/icons';
+import { MegaphoneIcon, CoinIcon, ChartIcon } from '../extras/icons';
 
 interface CampaignsUsage {
   usageLimit: number | null;

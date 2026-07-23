@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { UserButton } from '@clerk/react';
 import EnvironmentSwitcher from './EnvironmentSwitcher';
 import { useTheme } from '../ThemeContext';
-import { ChartIcon, MegaphoneIcon, MailIcon, SunIcon, MoonIcon } from '../styles/icons';
+import { ChartIcon, MegaphoneIcon, MailIcon, SunIcon, MoonIcon } from '../extras/icons';
 import '../styles/Sidebar.css';
 
 const NAV_ITEMS = [
