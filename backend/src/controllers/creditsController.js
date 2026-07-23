@@ -1,6 +1,5 @@
 import express from 'express';
 import * as creditsService from '../services/creditsService.js';
-import { FeatureDeniedError } from '../stigg/stiggFeatures.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 
 const router = express.Router();
@@ -17,13 +16,6 @@ async function fetchCreditBalance(req, res) {
       currentUsage: entitlement.currentUsage,
     });
   } catch (error) {
-    if (error instanceof FeatureDeniedError) {
-      console.log(error.message);
-      return res.status(403).json({
-        access: false,
-        error: 'You do not have access to credits. Please upgrade your plan.',
-      });
-    }
     console.error('Failed to get credit balance:', error);
     return res.status(500).json({
       access: false,
