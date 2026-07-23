@@ -63,7 +63,7 @@ export default function Sequences() {
     async function loadCreditRate() {
       try {
         const data = await fetchSequencesCreditRate(getToken);
-        setCreditRate(data.amount);
+        setCreditRate(data.rate);
       } catch (error: unknown) {
         const message =
           error instanceof Error ? error.message : 'Request failed';

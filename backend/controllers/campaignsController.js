@@ -39,7 +39,7 @@ async function fetchCampaignsCreditRate(req, res) {
     const rate = await campaignsService.getCampaignsCreditRate(customerId);
     console.log('Campaigns Credit Rate:', rate);
     return res.status(200).json({
-      amount: rate.amount,
+      rate,
     });
   } catch (error) {
     if (error instanceof FeatureDeniedError) {

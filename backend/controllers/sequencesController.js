@@ -39,7 +39,7 @@ async function fetchSequencesCreditRate(req, res) {
     const rate = await sequencesService.getSequencesCreditRate(customerId);
     console.log('Sequences Credit Rate:', rate);
     return res.status(200).json({
-      amount: rate.amount,
+      rate,
     });
   } catch (error) {
     if (error instanceof FeatureDeniedError) {

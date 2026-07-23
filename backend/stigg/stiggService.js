@@ -160,25 +160,3 @@ export async function reportUsage(customerId, featureId, value) {
   const { data } = await response.json();
   return data[0];
 }
-
-export async function getCreditRate(customerId, internalFeatureId, planId) {
-  const serverApiKey = await getActiveServerApiKey(customerId);
-  const response = await fetch(`${STIGG_BASE_URL}/plans/${planId}/charges`, {
-    method: 'GET',
-    headers: {
-      'X-API-KEY': serverApiKey,
-    },
-  });
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(errorBody);
-  }
-  const { data } = await response.json();
-  const charge = data.find((charge) => charge.featureId === internalFeatureId);
-  if (charge) {
-    return charge.creditRate;
-  }
-  else {
-    return null;
-  }
-}

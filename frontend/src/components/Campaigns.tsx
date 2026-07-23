@@ -63,7 +63,7 @@ export default function Campaigns() {
     async function loadCreditRate() {
       try {
         const data = await fetchCampaignsCreditRate(getToken);
-        setCreditRate(data.amount);
+        setCreditRate(data.rate);
       } catch (error: unknown) {
         const message =
           error instanceof Error ? error.message : 'Request failed';

@@ -10,7 +10,7 @@ interface CreateSequencesResponse {
 }
 
 interface FetchCreditRateResponse {
-  amount: number | null;
+  rate: number | null;
 }
 
 export const createSequence = async (

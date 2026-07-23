@@ -1,15 +1,8 @@
 import {
   SEQUENCES_FEATURE_ID,
-  CREDIT_RATE_MAPPINGS,
   FeatureDeniedError,
-  WORKWISE_AI_PRODUCT_ID
 } from '../stigg/stiggFeatures.js';
-import {
-  estimateCreditUsage,
-  getCreditRate,
-  getSubscriptions,
-  reportUsage,
-} from '../stigg/stiggService.js';
+import { estimateCreditUsage, reportUsage } from '../stigg/stiggService.js';
 
 async function createSequence(customerId) {
   const estimatedUsage = await estimateCreditUsage(
@@ -28,18 +21,15 @@ async function createSequence(customerId) {
 }
 
 async function getSequencesCreditRate(customerId) {
-  const subscriptions = await getSubscriptions(customerId);
-  // TODO: better way to do this function? Don't like the "ai" filter
-  const planId = subscriptions
-    .filter((sub) => sub.planId.includes("ai"))
-    .map((sub) => sub.planId);
-  // assumes that the user is subscribed to only one plan with the relevant credit rate
-  if (planId.length > 1) {
-    throw new Error("More than one credit rate detected for sequences");
-  }
-  // TODO: once featureRefId becomes available, remove this
-  const internalFeatureId = CREDIT_RATE_MAPPINGS[SEQUENCES_FEATURE_ID];
-  const creditRate = await getCreditRate(customerId, internalFeatureId, planId[0]);
+  // automatically solves for edge case where customer is subscribed to multiple plans w/ same consumption rate
+  // ex. customer subscribed to plan 1: each sequence costs 4 credits. Also plan 2: each sequence costs 2 credits
+  // overall, customer should only be charged 2 credits for each sequence
+  const estimatedUsage = await estimateCreditUsage(
+    customerId,
+    SEQUENCES_FEATURE_ID,
+    1,
+  );
+  const creditRate = estimatedUsage.breakdown[0].cost;
   if (creditRate === null) {
     throw new FeatureDeniedError(
       `Customer ${customerId} does not have a credit rate configured for sequences`,

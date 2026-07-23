@@ -10,7 +10,7 @@ interface CreateCampaignsResponse {
 }
 
 interface FetchCreditRateResponse {
-  amount: number | null;
+  rate: number | null;
 }
 
 export const createCampaign = async (
