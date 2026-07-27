@@ -1,7 +1,4 @@
-import {
-  ANALYTICS_FEATURE_ID,
-  FeatureDeniedError,
-} from '../stigg/stiggFeatures.js';
+import { ANALYTICS_FEATURE_ID, FeatureDeniedError } from '../stigg/stiggFeatures.js';
 import { getBooleanEntitlement } from '../stigg/stiggService.js';
 
 async function getAnalytics(customerId) {

@@ -11,9 +11,8 @@ async function syncUser(clerkId) {
 
   const clerkUser = await clerkClient.users.getUser(clerkId);
   const primaryEmail =
-    clerkUser.emailAddresses.find(
-      (e) => e.id === clerkUser.primaryEmailAddressId,
-    )?.emailAddress ?? null;
+    clerkUser.emailAddresses.find((e) => e.id === clerkUser.primaryEmailAddressId)?.emailAddress ??
+    null;
 
   // if the user is signing up for the first time, do a lazy upsert to MongoDB
   try {

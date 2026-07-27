@@ -1,17 +1,14 @@
 import type { GetClerkToken } from './clerkAuth';
 import { withAuthHeaders } from './clerkAuth';
-import { throwIfError } from './apiErrors';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 interface CreateCampaignsResponse {
-  access: boolean;
   usageLimit: number | null;
   currentUsage: number | null;
 }
 
 interface FetchCreditRateResponse {
-  access: boolean;
   rate: number | null;
 }
 
@@ -22,7 +19,10 @@ export const createCampaign = async (getToken: GetClerkToken): Promise<CreateCam
     headers,
   });
   const data = await response.json();
-  throwIfError(response, data);
+
+  if (!response.ok) {
+    throw Object.assign(new Error(data.error ?? 'Request failed'), { status: response.status });
+  }
 
   return data;
 };
@@ -35,7 +35,10 @@ export const fetchCampaignsCreditRate = async (
     headers,
   });
   const data = await response.json();
-  throwIfError(response, data);
+
+  if (!response.ok) {
+    throw Object.assign(new Error(data.error ?? 'Request failed'), { status: response.status });
+  }
 
   return data;
 };

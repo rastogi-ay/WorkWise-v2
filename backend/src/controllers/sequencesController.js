@@ -12,20 +12,16 @@ async function addSequence(req, res) {
     const usage = await sequencesService.createSequence(customerId);
     console.log('Sequences Usage:', usage);
     return res.status(201).json({
-      access: true,
       usageLimit: usage.credit.usageLimit,
       currentUsage: usage.credit.currentUsage,
     });
   } catch (error) {
     if (error instanceof FeatureDeniedError) {
       console.log(error.message);
-      return res.status(403).json({
-        access: false,
-      });
+      return res.status(403).json({});
     }
     console.error('Failed to create sequence:', error);
     return res.status(500).json({
-      access: false,
       error: 'Failed to create sequence.',
     });
   }
@@ -38,15 +34,12 @@ async function fetchSequencesCreditRate(req, res) {
     const rate = await sequencesService.getSequencesCreditRate(customerId);
     console.log('Sequences Credit Rate:', rate);
     return res.status(200).json({
-      access: true,
       rate,
     });
   } catch (error) {
     if (error instanceof FeatureDeniedError) {
       console.log(error.message);
-      return res.status(403).json({
-        access: false,
-      });
+      return res.status(403).json({});
     }
     console.error('Failed to get sequence credit rate:', error);
     return res.status(500).json({

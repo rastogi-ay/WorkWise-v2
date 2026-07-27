@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useAuth } from '@clerk/react';
 import '../styles/App.css';
 import '../styles/Analytics.css';
@@ -14,17 +14,24 @@ import {
 import { DonutChart } from '../extras/DonutChart';
 import { LineChart } from '../extras/LineChart';
 import { AccessDeniedModal } from './AccessDeniedModal';
+import { ErrorModal } from './ErrorModal';
 import { useEntitlement } from '../hooks/useEntitlement';
+import { PageLoading } from '../extras/PageLoading';
 
 export default function Analytics() {
   const { getToken } = useAuth();
   const analytics = useEntitlement(() => fetchAnalytics(getToken), [getToken]);
   const [animate, setAnimate] = useState(false);
 
+  // Give user flexibility to what they want to do with entitlement statuses
+  let modal: ReactNode = null;
   const hasAccess = analytics.status === 'granted';
-  const loadError = analytics.status === 'error';
-  const denied = analytics.status === 'denied';
-  const showModal = loadError || denied;
+
+  if (analytics.status === 'error') {
+    modal = <ErrorModal featureName="detailed productivity insights and analytics" />;
+  } else if (analytics.status === 'denied') {
+    modal = <AccessDeniedModal featureName="detailed productivity insights and analytics" />;
+  }
 
   useEffect(() => {
     if (!hasAccess) return;
@@ -32,11 +39,19 @@ export default function Analytics() {
     return () => cancelAnimationFrame(id);
   }, [hasAccess]);
 
+  if (analytics.status === 'loading') {
+    return (
+      <div className="app analytics-page">
+        <PageLoading />
+      </div>
+    );
+  }
+
   return (
     <div className="app analytics-page">
       <h1 className="analytics-title">Analytics</h1>
       <div className="page-content-wrapper">
-        <div className={showModal ? 'page-content page-content--blurred' : 'page-content'}>
+        <div className={modal ? 'page-content page-content--blurred' : 'page-content'}>
           <div className="analytics-cards">
             {STATS.map((stat, index) => (
               <div
@@ -79,12 +94,7 @@ export default function Analytics() {
           </div>
         </div>
 
-        {showModal && (
-          <AccessDeniedModal
-            status={loadError ? 'error' : 'denied'}
-            featureName="detailed productivity insights and analytics"
-          />
-        )}
+        {modal}
       </div>
     </div>
   );

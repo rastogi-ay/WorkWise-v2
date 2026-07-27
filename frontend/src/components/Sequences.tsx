@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useAuth } from '@clerk/react';
 import '../styles/App.css';
 import '../styles/Sequences.css';
@@ -6,8 +6,11 @@ import { createSequence, fetchSequencesCreditRate } from '../api/sequencesApi';
 import { fetchCreditBalance } from '../api/creditsApi';
 import { MailIcon, LayersIcon } from '../extras/icons';
 import { AccessDeniedModal } from './AccessDeniedModal';
-import { useEntitlement } from '../hooks/useEntitlement';
+import { ErrorModal } from './ErrorModal';
+import { InsufficientBalanceModal } from './InsufficientBalanceModal';
+import { useEntitlement, getLoadingAndError, isAccessDenied } from '../hooks/useEntitlement';
 import { CreditBalance } from './CreditBalance';
+import { PageLoading } from '../extras/PageLoading';
 
 interface Sequence {
   name: string;
@@ -39,51 +42,73 @@ export default function Sequences() {
   const [createDenied, setCreateDenied] = useState(false);
   const [usageLimit, setUsageLimit] = useState<number | null>(null);
   const [currentUsage, setCurrentUsage] = useState<number | null>(null);
+  const [creditRate, setCreditRate] = useState<number | null>(null);
 
   // Generating a sequence requires two independent entitlements:
   // 1. Credits (to render/spend the balance)
   // 2. Sequences access (to render the rate)
-  const credits = useEntitlement(() => fetchCreditBalance(getToken), [getToken]);
+  const creditBalance = useEntitlement(() => fetchCreditBalance(getToken), [getToken]);
   const sequenceAccess = useEntitlement(() => fetchSequencesCreditRate(getToken), [getToken]);
 
-  const loadError = credits.status === 'error' || sequenceAccess.status === 'error';
-  const denied = sequenceAccess.status === 'denied' || createDenied;
-  const showModal = loadError || (denied && !dismissedPaywall);
+  // Give user flexibility to what they want to do with entitlement statuses
+  let modal: ReactNode = null;
+  const { isLoading, hasError } = getLoadingAndError(creditBalance.status, sequenceAccess.status);
 
-  const creditRate = sequenceAccess.data?.rate ?? null;
+  if (hasError) {
+    modal = <ErrorModal featureName="AI sequence generation" />;
+  } else if (createDenied && !dismissedPaywall) {
+    modal = (
+      <InsufficientBalanceModal
+        featureName="AI sequence generation"
+        onClose={() => setDismissedPaywall(true)}
+      />
+    );
+  } else if (sequenceAccess.status === 'denied') {
+    modal = <AccessDeniedModal featureName="AI sequence generation" />;
+  }
 
   useEffect(() => {
-    if (!credits.data) return;
-    setUsageLimit(credits.data.usageLimit);
-    setCurrentUsage(credits.data.currentUsage);
-  }, [credits.data]);
+    if (!creditBalance.data || !sequenceAccess.data) return;
+    setUsageLimit(creditBalance.data.usageLimit);
+    setCurrentUsage(creditBalance.data.currentUsage);
+    setCreditRate(sequenceAccess.data.rate);
+  }, [creditBalance.data, sequenceAccess.data]);
 
   async function handleCreateSequence() {
     setIsCreating(true);
     try {
       const data = await createSequence(getToken);
-      if (data.access) {
-        setUsageLimit(data.usageLimit);
-        setCurrentUsage(data.currentUsage);
-        setSequences((prev) => [
-          {
-            name: randomSequenceName(),
-            status: 'Draft',
-            sent: 0,
-            openRate: '—',
-          },
-          ...prev,
-        ]);
-      } else {
+      setUsageLimit(data.usageLimit);
+      setCurrentUsage(data.currentUsage);
+      setCreateDenied(false);
+      setSequences((prev) => [
+        {
+          name: randomSequenceName(),
+          status: 'Draft',
+          sent: 0,
+          openRate: '—',
+        },
+        ...prev,
+      ]);
+    } catch (error: unknown) {
+      if (isAccessDenied(error)) {
         // hit the credit limit mid-session — surface the paywall
         setCreateDenied(true);
         setDismissedPaywall(false);
+      } else {
+        console.error('Failed to create sequence:', error);
       }
-    } catch (error: unknown) {
-      console.error('Failed to create sequence:', error);
     } finally {
       setIsCreating(false);
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="app sequences-page">
+        <PageLoading />
+      </div>
+    );
   }
 
   return (
@@ -101,11 +126,9 @@ export default function Sequences() {
       </div>
 
       <div className="page-content-wrapper">
-        <div className={showModal ? 'page-content page-content--blurred' : 'page-content'}>
+        <div className={modal ? 'page-content page-content--blurred' : 'page-content'}>
           <div className="generator-panel">
-            {credits.status === 'granted' && (
-              <CreditBalance usageLimit={usageLimit} currentUsage={currentUsage} />
-            )}
+            <CreditBalance usageLimit={usageLimit} currentUsage={currentUsage} />
 
             <div className="generator-panel__action">
               <button
@@ -163,13 +186,7 @@ export default function Sequences() {
           )}
         </div>
 
-        {showModal && (
-          <AccessDeniedModal
-            status={loadError ? 'error' : 'denied'}
-            featureName="AI sequence generation"
-            onClose={loadError ? undefined : () => setDismissedPaywall(true)}
-          />
-        )}
+        {modal}
       </div>
     </div>
   );

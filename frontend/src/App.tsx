@@ -7,12 +7,13 @@ import Campaigns from './components/Campaigns';
 import Sequences from './components/Sequences';
 import { UserProvider, useSyncedUser } from './UserContext';
 import { ThemeProvider } from './ThemeContext';
+import { PageLoading } from './extras/PageLoading';
 
 function ProtectedLayout() {
   const { isLoaded, isSignedIn } = useAuth();
 
   if (!isLoaded) {
-    return <div className="app-loading">Loading…</div>;
+    return <PageLoading />;
   }
   if (!isSignedIn) {
     return <Navigate to="/sign-in" replace />;
@@ -28,7 +29,7 @@ function StiggAndOutlet() {
   const { user: syncedUser, isLoading } = useSyncedUser();
 
   if (isLoading) {
-    return <div className="app-loading">Loading…</div>;
+    return <PageLoading />;
   }
 
   // clerkId of user will always match customerId in Stigg (for simplicity)

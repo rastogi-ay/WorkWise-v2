@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useAuth } from '@clerk/react';
 import '../styles/App.css';
 import '../styles/Campaigns.css';
@@ -6,8 +6,11 @@ import { createCampaign, fetchCampaignsCreditRate } from '../api/campaignsApi';
 import { fetchCreditBalance } from '../api/creditsApi';
 import { MegaphoneIcon, ChartIcon } from '../extras/icons';
 import { AccessDeniedModal } from './AccessDeniedModal';
-import { useEntitlement } from '../hooks/useEntitlement';
+import { ErrorModal } from './ErrorModal';
+import { InsufficientBalanceModal } from './InsufficientBalanceModal';
+import { useEntitlement, getLoadingAndError, isAccessDenied } from '../hooks/useEntitlement';
 import { CreditBalance } from './CreditBalance';
+import { PageLoading } from '../extras/PageLoading';
 
 interface Campaign {
   name: string;
@@ -39,51 +42,73 @@ export default function Campaigns() {
   const [createDenied, setCreateDenied] = useState(false);
   const [usageLimit, setUsageLimit] = useState<number | null>(null);
   const [currentUsage, setCurrentUsage] = useState<number | null>(null);
+  const [creditRate, setCreditRate] = useState<number | null>(null);
 
   // Generating a campaign requires two independent entitlements:
   // 1. Credits (to render/spend the balance)
   // 2. Campaigns access (to render the rate)
-  const credits = useEntitlement(() => fetchCreditBalance(getToken), [getToken]);
+  const creditBalance = useEntitlement(() => fetchCreditBalance(getToken), [getToken]);
   const campaignAccess = useEntitlement(() => fetchCampaignsCreditRate(getToken), [getToken]);
 
-  const loadError = credits.status === 'error' || campaignAccess.status === 'error';
-  const denied = campaignAccess.status === 'denied' || createDenied;
-  const showModal = loadError || (denied && !dismissedPaywall);
+  // Give user flexibility to what they want to do with entitlement statuses
+  let modal: ReactNode = null;
+  const { isLoading, hasError } = getLoadingAndError(creditBalance.status, campaignAccess.status);
 
-  const creditRate = campaignAccess.data?.rate ?? null;
+  if (hasError) {
+    modal = <ErrorModal featureName="AI campaign generation" />;
+  } else if (createDenied && !dismissedPaywall) {
+    modal = (
+      <InsufficientBalanceModal
+        featureName="AI campaign generation"
+        onClose={() => setDismissedPaywall(true)}
+      />
+    );
+  } else if (campaignAccess.status === 'denied') {
+    modal = <AccessDeniedModal featureName="AI campaign generation" />;
+  }
 
   useEffect(() => {
-    if (!credits.data) return;
-    setUsageLimit(credits.data.usageLimit);
-    setCurrentUsage(credits.data.currentUsage);
-  }, [credits.data]);
+    if (!creditBalance.data || !campaignAccess.data) return;
+    setUsageLimit(creditBalance.data.usageLimit);
+    setCurrentUsage(creditBalance.data.currentUsage);
+    setCreditRate(campaignAccess.data.rate);
+  }, [creditBalance.data, campaignAccess.data]);
 
   async function handleCreateCampaign() {
     setIsCreating(true);
     try {
       const data = await createCampaign(getToken);
-      if (data.access) {
-        setUsageLimit(data.usageLimit);
-        setCurrentUsage(data.currentUsage);
-        setCampaigns((prev) => [
-          {
-            name: randomCampaignName(),
-            status: 'Draft',
-            sent: 0,
-            openRate: '—',
-          },
-          ...prev,
-        ]);
-      } else {
+      setUsageLimit(data.usageLimit);
+      setCurrentUsage(data.currentUsage);
+      setCreateDenied(false);
+      setCampaigns((prev) => [
+        {
+          name: randomCampaignName(),
+          status: 'Draft',
+          sent: 0,
+          openRate: '—',
+        },
+        ...prev,
+      ]);
+    } catch (error: unknown) {
+      if (isAccessDenied(error)) {
         // hit the credit limit mid-session — surface the paywall
         setCreateDenied(true);
         setDismissedPaywall(false);
+      } else {
+        console.error('Failed to create campaign:', error);
       }
-    } catch (error: unknown) {
-      console.error('Failed to create campaign:', error);
     } finally {
       setIsCreating(false);
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="app campaigns-page">
+        <PageLoading />
+      </div>
+    );
   }
 
   return (
@@ -101,11 +126,9 @@ export default function Campaigns() {
       </div>
 
       <div className="page-content-wrapper">
-        <div className={showModal ? 'page-content page-content--blurred' : 'page-content'}>
+        <div className={modal ? 'page-content page-content--blurred' : 'page-content'}>
           <div className="generator-panel">
-            {credits.status === 'granted' && (
-              <CreditBalance usageLimit={usageLimit} currentUsage={currentUsage} />
-            )}
+            <CreditBalance usageLimit={usageLimit} currentUsage={currentUsage} />
 
             <div className="generator-panel__action">
               <button
@@ -163,13 +186,7 @@ export default function Campaigns() {
           )}
         </div>
 
-        {showModal && (
-          <AccessDeniedModal
-            status={loadError ? 'error' : 'denied'}
-            featureName="AI campaign generation"
-            onClose={loadError ? undefined : () => setDismissedPaywall(true)}
-          />
-        )}
+        {modal}
       </div>
     </div>
   );

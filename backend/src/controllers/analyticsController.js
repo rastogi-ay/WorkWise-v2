@@ -11,19 +11,14 @@ async function fetchAnalytics(req, res) {
   try {
     const entitlement = await analyticsService.getAnalytics(customerId);
     console.log('Analytics Entitlement:', entitlement);
-    return res.status(200).json({
-      access: true,
-    });
+    return res.status(200).json({});
   } catch (error) {
     if (error instanceof FeatureDeniedError) {
       console.log(error.message);
-      return res.status(403).json({
-        access: false,
-      });
+      return res.status(403).json({});
     }
     console.error('Failed to get analytics:', error);
     return res.status(500).json({
-      access: false,
       error: 'Failed to get analytics.',
     });
   }

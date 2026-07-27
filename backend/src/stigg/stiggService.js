@@ -5,9 +5,7 @@ export const STIGG_BASE_URL = 'https://api.stigg.io/api/v1';
 // Used on every request to get the Stigg API key from the environment the user is currently on
 async function getActiveServerApiKey(clerkId) {
   const user = await User.findOne({ clerkId });
-  const activeEnv = user?.activeEnvironment
-    ? user.environments?.get(user.activeEnvironment)
-    : null;
+  const activeEnv = user?.activeEnvironment ? user.environments?.get(user.activeEnvironment) : null;
   return activeEnv?.serverApiKey ?? process.env.DEFAULT_STIGG_SERVER_API_KEY;
 }
 
@@ -52,9 +50,7 @@ export async function getSubscriptions(customerId) {
 
 export async function getBooleanEntitlement(customerId, featureId) {
   const serverApiKey = await getActiveServerApiKey(customerId);
-  const url = new URL(
-    `${STIGG_BASE_URL}/customers/${customerId}/entitlements/check`,
-  );
+  const url = new URL(`${STIGG_BASE_URL}/customers/${customerId}/entitlements/check`);
   url.searchParams.set('featureId', featureId);
   const response = await fetch(url, {
     method: 'GET',
@@ -70,15 +66,9 @@ export async function getBooleanEntitlement(customerId, featureId) {
   return data;
 }
 
-export async function getNumericEntitlement(
-  customerId,
-  featureId,
-  requestedUsage,
-) {
+export async function getNumericEntitlement(customerId, featureId, requestedUsage) {
   const serverApiKey = await getActiveServerApiKey(customerId);
-  const url = new URL(
-    `${STIGG_BASE_URL}/customers/${customerId}/entitlements/check`,
-  );
+  const url = new URL(`${STIGG_BASE_URL}/customers/${customerId}/entitlements/check`);
   url.searchParams.set('featureId', featureId);
   if (requestedUsage !== undefined) {
     url.searchParams.set('requestedUsage', requestedUsage);
@@ -99,9 +89,7 @@ export async function getNumericEntitlement(
 
 export async function getCreditEntitlement(customerId, currencyId) {
   const serverApiKey = await getActiveServerApiKey(customerId);
-  const url = new URL(
-    `${STIGG_BASE_URL}/customers/${customerId}/entitlements/check`,
-  );
+  const url = new URL(`${STIGG_BASE_URL}/customers/${customerId}/entitlements/check`);
   url.searchParams.set('currencyId', currencyId);
   const response = await fetch(url, {
     method: 'GET',

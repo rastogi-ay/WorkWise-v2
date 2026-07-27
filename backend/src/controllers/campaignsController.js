@@ -12,16 +12,13 @@ async function addCampaign(req, res) {
     const usage = await campaignsService.createCampaign(customerId);
     console.log('Campaigns Usage:', usage);
     return res.status(201).json({
-      access: true,
       usageLimit: usage.credit.usageLimit,
       currentUsage: usage.credit.currentUsage,
     });
   } catch (error) {
     if (error instanceof FeatureDeniedError) {
       console.log(error.message);
-      return res.status(403).json({
-        access: false,
-      });
+      return res.status(403).json({});
     }
     console.error('Failed to create campaign:', error);
     return res.status(500).json({
@@ -38,16 +35,12 @@ async function fetchCampaignsCreditRate(req, res) {
     const rate = await campaignsService.getCampaignsCreditRate(customerId);
     console.log('Campaigns Credit Rate:', rate);
     return res.status(200).json({
-      access: true,
       rate,
     });
   } catch (error) {
     if (error instanceof FeatureDeniedError) {
       console.log(error.message);
-      return res.status(403).json({
-        access: false,
-        error: 'No credit rate found on subscribed plan.',
-      });
+      return res.status(403).json({});
     }
     console.error('Failed to get campaign credit rate:', error);
     return res.status(500).json({

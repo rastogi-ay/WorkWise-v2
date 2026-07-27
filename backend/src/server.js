@@ -46,9 +46,7 @@ export async function startServer() {
     throw new Error('MONGODB_URI is not set');
   }
 
-  mongoose.connection.on('error', (err) =>
-    console.error('MongoDB connection error:', err),
-  );
+  mongoose.connection.on('error', (err) => console.error('MongoDB connection error:', err));
   await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 10000 });
 
   server = app.listen(PORT, () => {

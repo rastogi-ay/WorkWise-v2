@@ -7,10 +7,27 @@ interface EntitlementResult<T> {
   data: T | null;
 }
 
+// Checks for 403 status; implies Stigg was called
+export function isAccessDenied(error: unknown): boolean {
+  return error instanceof Error && (error as Error & { status?: number }).status === 403;
+}
+
+// Reduces multiple useEntitlement statuses down to the two aggregate facts a page needs:
+// 1) is any critical information still loading?
+// 2) did retrieving any critical information result in an error?
+// this function is NOT required. Simply a helper since most cases will leverage this
+export function getLoadingAndError(...statuses: EntitlementStatus[]) {
+  return {
+    isLoading: statuses.some((s) => s === 'loading'),
+    hasError: statuses.some((s) => s === 'error'),
+  };
+}
+
 // Fetches an entitlement-gated endpoint and reduces the result down to a
-// single status: loading, granted, denied (access: false, not a failure),
-// or error (the request itself failed).
-export function useEntitlement<T extends { access: boolean }>(
+// single status based purely on the HTTP response: granted (2xx), denied
+// (403 — an expected "no access" outcome, not a failure), or error (any
+// other non-2xx status, or a network failure).
+export function useEntitlement<T>(
   fetcher: () => Promise<T>,
   deps: unknown[],
 ): EntitlementResult<T> {
@@ -25,12 +42,16 @@ export function useEntitlement<T extends { access: boolean }>(
       .then((result) => {
         if (cancelled) return;
         setData(result);
-        setStatus(result.access ? 'granted' : 'denied');
+        setStatus('granted');
       })
       .catch((error: unknown) => {
         if (cancelled) return;
-        setStatus('error');
-        console.error('Entitlement check failed:', error);
+        if (isAccessDenied(error)) {
+          setStatus('denied');
+        } else {
+          setStatus('error');
+          console.error('Entitlement check failed:', error);
+        }
       });
 
     return () => {
