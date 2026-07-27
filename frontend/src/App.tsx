@@ -5,6 +5,10 @@ import Sidebar from './components/Sidebar';
 import Analytics from './components/Analytics';
 import Campaigns from './components/Campaigns';
 import Sequences from './components/Sequences';
+import WorkWiseAIPaywall from './components/WorkWiseAIPaywall';
+import WorkWisePlannerPaywall from './components/WorkWisePlannerPaywall';
+import { PRICING_URL_BY_PRODUCT_ID } from './components/PaywallPage';
+import { WORKWISE_AI_PRODUCT_ID, WORKWISE_PLANNER_PRODUCT_ID } from './stigg/constants';
 import { UserProvider, useSyncedUser } from './UserContext';
 import { ThemeProvider } from './ThemeContext';
 import { PageLoading } from './extras/PageLoading';
@@ -33,6 +37,7 @@ function StiggAndOutlet() {
   }
 
   // clerkId of user will always match customerId in Stigg (for simplicity)
+  // TODO: remove this comment (this is going to be false)
   const customerId = syncedUser?.clerkId;
   if (!customerId) {
     return (
@@ -80,9 +85,16 @@ export default function App() {
           <Route element={<ProtectedLayout />}>
             <Route element={<StiggAndOutlet />}>
               <Route path="/" element={<Analytics />} />
-              <Route path="/analytics" element={<Analytics />} />
               <Route path="/campaigns" element={<Campaigns />} />
               <Route path="/sequences" element={<Sequences />} />
+              <Route
+                path={PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID]}
+                element={<WorkWiseAIPaywall />}
+              />
+              <Route
+                path={PRICING_URL_BY_PRODUCT_ID[WORKWISE_PLANNER_PRODUCT_ID]}
+                element={<WorkWisePlannerPaywall />}
+              />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

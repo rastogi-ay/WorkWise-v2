@@ -150,6 +150,22 @@ export function LockIcon({ size = 20 }: IconProps) {
   );
 }
 
+export function UnlockIcon({ size = 20 }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 7.6-1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function AlertIcon({ size = 20 }: IconProps) {
   return (
     <svg

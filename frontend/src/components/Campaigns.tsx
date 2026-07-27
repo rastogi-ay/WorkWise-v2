@@ -8,9 +8,13 @@ import { MegaphoneIcon, ChartIcon } from '../extras/icons';
 import { AccessDeniedModal } from './AccessDeniedModal';
 import { ErrorModal } from './ErrorModal';
 import { InsufficientBalanceModal } from './InsufficientBalanceModal';
-import { useEntitlement, getLoadingAndError, isAccessDenied } from '../hooks/useEntitlement';
+import { useEntitlement, getLoadingAndError, isAccessDenied } from '../stigg/useEntitlement';
+import { PRICING_URL_BY_PRODUCT_ID } from './PaywallPage';
+import { WORKWISE_AI_PRODUCT_ID } from '../stigg/constants';
 import { CreditBalance } from './CreditBalance';
 import { PageLoading } from '../extras/PageLoading';
+
+const pricingUrl = PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID];
 
 interface Campaign {
   name: string;
@@ -60,11 +64,14 @@ export default function Campaigns() {
     modal = (
       <InsufficientBalanceModal
         featureName="AI campaign generation"
+        pricingUrl={pricingUrl}
         onClose={() => setDismissedPaywall(true)}
       />
     );
   } else if (campaignAccess.status === 'denied') {
-    modal = <AccessDeniedModal featureName="AI campaign generation" />;
+    modal = (
+      <AccessDeniedModal featureName="AI campaign generation" pricingUrl={pricingUrl} />
+    );
   }
 
   useEffect(() => {

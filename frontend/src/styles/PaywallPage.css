@@ -1,0 +1,7 @@
+.app--wide {
+  max-width: 1320px;
+}
+
+.app--wide .page-header {
+  margin-bottom: 3rem;
+}

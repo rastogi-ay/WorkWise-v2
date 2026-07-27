@@ -1,12 +1,18 @@
+import { Link } from 'react-router-dom';
 import { CoinIcon } from '../extras/icons';
 import '../styles/AccessDeniedModal.css';
 
 interface InsufficientBalanceModalProps {
   featureName: string;
+  pricingUrl: string;
   onClose?: () => void;
 }
 
-export function InsufficientBalanceModal({ featureName, onClose }: InsufficientBalanceModalProps) {
+export function InsufficientBalanceModal({
+  featureName,
+  pricingUrl,
+  onClose,
+}: InsufficientBalanceModalProps) {
   return (
     <div className="paywall-backdrop">
       <div className="paywall-modal">
@@ -28,9 +34,9 @@ export function InsufficientBalanceModal({ featureName, onClose }: InsufficientB
           You don't have enough credits left to use {featureName}. Top up your balance to keep
           going.
         </p>
-        <button type="button" className="paywall-modal__cta">
+        <Link to={pricingUrl} className="paywall-modal__cta">
           Buy Credits
-        </button>
+        </Link>
       </div>
     </div>
   );

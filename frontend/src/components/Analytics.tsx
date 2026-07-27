@@ -15,8 +15,12 @@ import { DonutChart } from '../extras/DonutChart';
 import { LineChart } from '../extras/LineChart';
 import { AccessDeniedModal } from './AccessDeniedModal';
 import { ErrorModal } from './ErrorModal';
-import { useEntitlement } from '../hooks/useEntitlement';
+import { useEntitlement } from '../stigg/useEntitlement';
+import { PRICING_URL_BY_PRODUCT_ID } from './PaywallPage';
+import { WORKWISE_AI_PRODUCT_ID } from '../stigg/constants';
 import { PageLoading } from '../extras/PageLoading';
+
+const pricingUrl = PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID];
 
 export default function Analytics() {
   const { getToken } = useAuth();
@@ -30,7 +34,12 @@ export default function Analytics() {
   if (analytics.status === 'error') {
     modal = <ErrorModal featureName="detailed productivity insights and analytics" />;
   } else if (analytics.status === 'denied') {
-    modal = <AccessDeniedModal featureName="detailed productivity insights and analytics" />;
+    modal = (
+      <AccessDeniedModal
+        featureName="detailed productivity insights and analytics"
+        pricingUrl={pricingUrl}
+      />
+    );
   }
 
   useEffect(() => {
