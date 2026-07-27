@@ -9,6 +9,7 @@ import environmentsController from './controllers/environmentsController.js';
 import campaignsController from './controllers/campaignsController.js';
 import sequencesController from './controllers/sequencesController.js';
 import creditsController from './controllers/creditsController.js';
+import stiggEnvironmentController from './controllers/stiggEnvironmentController.js';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.use('/api/analytics', analyticsController);
 app.use('/api/campaigns', campaignsController);
 app.use('/api/sequences', sequencesController);
 app.use('/api/credits', creditsController);
+app.use('/api/stigg-environment', stiggEnvironmentController);
 
 // Start the server, wait for MongoDB to connect
 export async function startServer() {

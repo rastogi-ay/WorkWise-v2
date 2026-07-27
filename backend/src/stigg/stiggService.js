@@ -1,6 +1,7 @@
 import { User } from '../models/User.js';
 
 export const STIGG_BASE_URL = 'https://api.stigg.io/api/v1';
+export const STIGG_GRAPHQL_URL = 'https://api.stigg.io/graphql';
 
 // Used on every request to get the Stigg API key from the environment the user is currently on
 async function getActiveServerApiKey(clerkId) {
@@ -147,4 +148,35 @@ export async function reportUsage(customerId, featureId, value) {
   }
   const { data } = await response.json();
   return data[0];
+}
+
+export async function getIntegrationsCount(customerId) {
+  const serverApiKey = await getActiveServerApiKey(customerId);
+  const response = await fetch(STIGG_GRAPHQL_URL, {
+    method: 'POST',
+    headers: {
+      'X-API-KEY': serverApiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query: `
+        query Node($filter: IntegrationFilter) {
+          integrations(filter: $filter) {
+            totalCount
+          }
+        }
+      `,
+      variables: { filter: { vendorType: { eq: 'BILLING' } } },
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(errorBody);
+  }
+  const { data, errors } = await response.json();
+  if (errors) {
+    throw new Error(JSON.stringify(errors));
+  }
+  return data.integrations.totalCount;
 }

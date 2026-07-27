@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@clerk/react';
 import { Paywall, Checkout, SubscribeIntentionType } from '@stigg/react-sdk';
 import '@stigg/react-sdk/dist/styles.css';
 import '../styles/App.css';
 import '../styles/PaywallPage.css';
 import { UnlockIcon } from '../extras/icons';
 import { WORKWISE_AI_PRODUCT_ID, WORKWISE_PLANNER_PRODUCT_ID } from '../stigg/constants';
+import { fetchBillingIntegrationStatus } from '../api/stiggEnvironmentApi';
+import { BillingIntegrationMissing } from './BillingIntegrationMissing';
 
 export const PRICING_URL_BY_PRODUCT_ID: Record<string, string> = {
   [WORKWISE_AI_PRODUCT_ID]: '/pricing/ai',
@@ -19,9 +22,26 @@ interface PaywallPageProps {
 }
 
 export function PaywallPage({ productId, title, subtitle }: PaywallPageProps) {
+  const { getToken } = useAuth();
   const navigate = useNavigate();
   const [checkoutPlanId, setCheckoutPlanId] = useState<string | null>(null);
   const [billingIntegrationExists, setBillingIntegrationExists] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchBillingIntegrationStatus(getToken)
+      .then(({ billingIntegrationExists }) => {
+        if (!cancelled) setBillingIntegrationExists(billingIntegrationExists);
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to check billing integration status:', error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [getToken]);
 
   return (
     <div className="app app--wide">
@@ -38,16 +58,20 @@ export function PaywallPage({ productId, title, subtitle }: PaywallPageProps) {
       <div className="page-content-wrapper">
         <div className="page-content">
           {checkoutPlanId ? (
-            <Checkout
-              planId={checkoutPlanId}
-              onCheckoutCompleted={async ({ success }) => {
-                if (success) {
-                  navigate('/');
-                } else {
-                  setCheckoutPlanId(null);
-                }
-              }}
-            />
+            billingIntegrationExists ? (
+              <Checkout
+                planId={checkoutPlanId}
+                onCheckoutCompleted={async ({ success }) => {
+                  if (success) {
+                    navigate('/');
+                  } else {
+                    setCheckoutPlanId(null);
+                  }
+                }}
+              />
+            ) : (
+              <BillingIntegrationMissing />
+            )
           ) : (
             <Paywall
               productId={productId}
