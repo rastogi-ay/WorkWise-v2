@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar';
 import Analytics from './components/Analytics';
 import Campaigns from './components/Campaigns';
 import Sequences from './components/Sequences';
+import CreditsUsage from './components/CreditsUsage';
 import WorkWiseAIPaywall from './components/WorkWiseAIPaywall';
 import WorkWisePlannerPaywall from './components/WorkWisePlannerPaywall';
 import { PRICING_URL_BY_PRODUCT_ID } from './components/PaywallPage';
@@ -87,6 +88,7 @@ export default function App() {
               <Route path="/" element={<Analytics />} />
               <Route path="/campaigns" element={<Campaigns />} />
               <Route path="/sequences" element={<Sequences />} />
+              <Route path="/credits" element={<CreditsUsage />} />
               <Route
                 path={PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID]}
                 element={<WorkWiseAIPaywall />}

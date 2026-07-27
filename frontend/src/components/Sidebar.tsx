@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { UserButton } from '@clerk/react';
 import EnvironmentSwitcher from './EnvironmentSwitcher';
 import { useTheme } from '../ThemeContext';
-import { ChartIcon, MegaphoneIcon, MailIcon, SunIcon, MoonIcon } from '../extras/icons';
+import { ChartIcon, MegaphoneIcon, MailIcon, CoinIcon, SunIcon, MoonIcon } from '../extras/icons';
 import '../styles/Sidebar.css';
 
 const NAV_ITEMS = [
@@ -10,6 +10,25 @@ const NAV_ITEMS = [
   { to: '/campaigns', label: 'Campaigns', Icon: MegaphoneIcon },
   { to: '/sequences', label: 'Sequences', Icon: MailIcon },
 ];
+
+const SECONDARY_NAV_ITEMS = [{ to: '/credits', label: 'Credits', Icon: CoinIcon }];
+
+function renderNavLink({ to, label, Icon }: (typeof NAV_ITEMS)[number]) {
+  return (
+    <NavLink
+      key={to}
+      to={to}
+      className={({ isActive }) =>
+        isActive ? 'sidebar__link sidebar__link--active' : 'sidebar__link'
+      }
+    >
+      <span className="sidebar__link-icon">
+        <Icon size={18} />
+      </span>
+      {label}
+    </NavLink>
+  );
+}
 
 export default function Sidebar() {
   const { theme, toggleTheme } = useTheme();
@@ -25,20 +44,9 @@ export default function Sidebar() {
       </div>
 
       <nav className="sidebar__nav">
-        {NAV_ITEMS.map(({ to, label, Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              isActive ? 'sidebar__link sidebar__link--active' : 'sidebar__link'
-            }
-          >
-            <span className="sidebar__link-icon">
-              <Icon size={18} />
-            </span>
-            {label}
-          </NavLink>
-        ))}
+        {NAV_ITEMS.map(renderNavLink)}
+        <hr className="sidebar__divider" />
+        {SECONDARY_NAV_ITEMS.map(renderNavLink)}
       </nav>
 
       <div className="sidebar__footer">

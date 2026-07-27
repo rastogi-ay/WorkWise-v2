@@ -89,6 +89,12 @@
   background-color: var(--color-accent-soft);
 }
 
+.sidebar__divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 0.5rem 0;
+}
+
 .sidebar__footer {
   margin-top: auto;
   display: flex;

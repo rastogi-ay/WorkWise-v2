@@ -5,10 +5,9 @@ import { Paywall, Checkout, SubscribeIntentionType } from '@stigg/react-sdk';
 import '@stigg/react-sdk/dist/styles.css';
 import '../styles/App.css';
 import '../styles/PaywallPage.css';
-import { UnlockIcon } from '../extras/icons';
+import { UnlockIcon, AlertIcon } from '../extras/icons';
 import { WORKWISE_AI_PRODUCT_ID, WORKWISE_PLANNER_PRODUCT_ID } from '../stigg/constants';
 import { fetchBillingIntegrationStatus } from '../api/stiggEnvironmentApi';
-import { BillingIntegrationMissing } from './BillingIntegrationMissing';
 
 export const PRICING_URL_BY_PRODUCT_ID: Record<string, string> = {
   [WORKWISE_AI_PRODUCT_ID]: '/pricing/ai',
@@ -70,7 +69,16 @@ export function PaywallPage({ productId, title, subtitle }: PaywallPageProps) {
                 }}
               />
             ) : (
-              <BillingIntegrationMissing />
+              <div className="empty-state">
+                <span className="empty-state__icon">
+                  <AlertIcon size={22} />
+                </span>
+                <p className="empty-state__title">Billing integration not connected</p>
+                <p className="empty-state__body">
+                  Checkout isn't available until a billing integration is connected for this
+                  environment.
+                </p>
+              </div>
             )
           ) : (
             <Paywall
