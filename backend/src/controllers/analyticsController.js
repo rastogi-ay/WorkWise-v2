@@ -10,6 +10,7 @@ async function fetchAnalytics(req, res) {
 
   try {
     const entitlement = await analyticsService.getAnalytics(customerId);
+    // TODO: revisit logging; what would be most useful to engineers?
     console.log('Analytics Entitlement:', entitlement);
     return res.status(200).json({});
   } catch (error) {

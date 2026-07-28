@@ -7,7 +7,7 @@ import '../styles/App.css';
 import '../styles/PaywallPage.css';
 import { UnlockIcon, AlertIcon } from '../extras/icons';
 import { WORKWISE_AI_PRODUCT_ID, WORKWISE_PLANNER_PRODUCT_ID } from '../stigg/constants';
-import { fetchBillingIntegrationStatus } from '../api/stiggEnvironmentApi';
+import { fetchBillingIntegrationStatus } from '../api/stiggAuxiliaryApi';
 
 export const PRICING_URL_BY_PRODUCT_ID: Record<string, string> = {
   [WORKWISE_AI_PRODUCT_ID]: '/pricing/ai',

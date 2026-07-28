@@ -9,6 +9,9 @@ export const SEQUENCES_FEATURE_ID = 'feature-email-sequences';
 export const WORKWISE_AI_PRODUCT_ID = 'product-work-wise';
 export const WORKWISE_PLANNER_PRODUCT_ID = 'product-work-wise-planner';
 
+// Plan IDs
+export const WORKWISE_AI_FREE_PLAN_ID = 'plan-work-wise-ai-free';
+
 // Error class for feature denied errors to be thrown after entitlement checks
 export class FeatureDeniedError extends Error {
   constructor(message, details = null) {

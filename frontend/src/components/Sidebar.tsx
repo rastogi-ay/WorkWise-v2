@@ -1,6 +1,5 @@
 import { NavLink } from 'react-router-dom';
 import { UserButton } from '@clerk/react';
-import EnvironmentSwitcher from './EnvironmentSwitcher';
 import { useTheme } from '../ThemeContext';
 import { ChartIcon, MegaphoneIcon, MailIcon, CoinIcon, SunIcon, MoonIcon } from '../extras/icons';
 import '../styles/Sidebar.css';
@@ -50,7 +49,9 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar__footer">
-        <EnvironmentSwitcher />
+        <NavLink to="/environments" className="sidebar__theme-toggle">
+          Manage Environments
+        </NavLink>
         <button
           type="button"
           className="sidebar__theme-toggle"

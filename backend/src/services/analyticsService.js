@@ -1,5 +1,5 @@
 import { ANALYTICS_FEATURE_ID, FeatureDeniedError } from '../stigg/stiggFeatures.js';
-import { getBooleanEntitlement } from '../stigg/stiggService.js';
+import { getBooleanEntitlement } from '../stigg/stiggClient.js';
 
 async function getAnalytics(customerId) {
   const entitlement = await getBooleanEntitlement(customerId, ANALYTICS_FEATURE_ID);

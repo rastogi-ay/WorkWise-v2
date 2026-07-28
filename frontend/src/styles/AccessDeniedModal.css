@@ -91,3 +91,13 @@
 .paywall-modal__cta:hover {
   filter: brightness(1.08);
 }
+
+.paywall-modal__cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: none;
+}
+
+.paywall-modal__cta--danger {
+  background: var(--color-danger);
+}

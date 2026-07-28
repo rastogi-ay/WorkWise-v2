@@ -18,6 +18,18 @@ async function addEnvironment(clerkId, name, { clientApiKey, serverApiKey }) {
   if (!name || !clientApiKey || !serverApiKey) {
     throw new Error('name, clientApiKey, and serverApiKey are required');
   }
+  if (!clientApiKey.startsWith('client')) {
+    throw new Error('clientApiKey must start with "client"');
+  }
+  if (!serverApiKey.startsWith('server')) {
+    throw new Error('serverApiKey must start with "server"');
+  }
+
+  const existing = await User.findOne({ clerkId });
+  if (!existing) throw new Error('User not found');
+  if ((existing.environments ?? new Map()).has(name)) {
+    throw new Error(`Environment "${name}" already exists`);
+  }
 
   const user = await User.findOneAndUpdate(
     { clerkId },
@@ -29,17 +41,22 @@ async function addEnvironment(clerkId, name, { clientApiKey, serverApiKey }) {
 }
 
 async function removeEnvironment(clerkId, name) {
+  if (name === 'Default') {
+    throw new Error('The Default environment cannot be removed');
+  }
+
   const user = await User.findOne({ clerkId });
   if (!user) throw new Error('User not found');
 
-  const update = { $unset: { [`environments.${name}`]: '' } };
   if (user.activeEnvironment === name) {
-    update.$set = { activeEnvironment: null };
+    throw new Error('The active environment cannot be removed');
   }
 
-  const updated = await User.findOneAndUpdate({ clerkId }, update, {
-    returnDocument: 'after',
-  });
+  const updated = await User.findOneAndUpdate(
+    { clerkId },
+    { $unset: { [`environments.${name}`]: '' } },
+    { returnDocument: 'after' },
+  );
   return toSafeEnvironmentList(updated);
 }
 

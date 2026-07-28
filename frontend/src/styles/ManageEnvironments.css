@@ -1,0 +1,100 @@
+.manage-environments {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 420px;
+}
+
+.manage-environments__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.manage-environments__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.manage-environments__row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.manage-environments__row-actions button {
+  padding: 0.3rem 0.6rem;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.manage-environments__row-actions button:hover {
+  color: var(--color-text);
+  border-color: var(--color-accent);
+}
+
+.manage-environments__row-actions button.manage-environments__remove {
+  color: var(--color-danger);
+}
+
+.manage-environments__active-badge {
+  padding: 0.3rem 0.6rem;
+  color: var(--color-accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.manage-environments__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.manage-environments__form input {
+  padding: 0.55rem 0.7rem;
+  background-color: var(--color-surface-alt);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.manage-environments__form button {
+  padding: 0.55rem 0.9rem;
+  background: var(--color-accent-gradient);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.manage-environments__error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 0.9rem;
+}
+
+.manage-environments__confirm-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background-color: var(--color-surface-alt);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}

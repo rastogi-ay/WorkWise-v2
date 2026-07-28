@@ -17,6 +17,7 @@ const userSchema = new Schema(
     firstName: { type: String, default: null },
     lastName: { type: String, default: null },
     lastSeenAt: { type: Date, default: Date.now },
+    stiggOnboarded: { type: Boolean, default: false },
     environments: {
       type: Map,
       of: stiggEnvironmentSchema,

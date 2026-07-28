@@ -6,9 +6,8 @@ import Analytics from './components/Analytics';
 import Campaigns from './components/Campaigns';
 import Sequences from './components/Sequences';
 import CreditsUsage from './components/CreditsUsage';
-import WorkWiseAIPaywall from './components/WorkWiseAIPaywall';
-import WorkWisePlannerPaywall from './components/WorkWisePlannerPaywall';
-import { PRICING_URL_BY_PRODUCT_ID } from './components/PaywallPage';
+import ManageEnvironments from './components/ManageEnvironments';
+import { PaywallPage, PRICING_URL_BY_PRODUCT_ID } from './components/PaywallPage';
 import { WORKWISE_AI_PRODUCT_ID, WORKWISE_PLANNER_PRODUCT_ID } from './stigg/constants';
 import { UserProvider, useSyncedUser } from './UserContext';
 import { ThemeProvider } from './ThemeContext';
@@ -89,13 +88,26 @@ export default function App() {
               <Route path="/campaigns" element={<Campaigns />} />
               <Route path="/sequences" element={<Sequences />} />
               <Route path="/credits" element={<CreditsUsage />} />
+              <Route path="/environments" element={<ManageEnvironments />} />
               <Route
                 path={PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID]}
-                element={<WorkWiseAIPaywall />}
+                element={
+                  <PaywallPage
+                    productId={WORKWISE_AI_PRODUCT_ID}
+                    title="Pricing"
+                    subtitle="Choose a plan that unlocks more of WorkWise AI."
+                  />
+                }
               />
               <Route
                 path={PRICING_URL_BY_PRODUCT_ID[WORKWISE_PLANNER_PRODUCT_ID]}
-                element={<WorkWisePlannerPaywall />}
+                element={
+                  <PaywallPage
+                    productId={WORKWISE_PLANNER_PRODUCT_ID}
+                    title="Pricing"
+                    subtitle="Choose a plan that unlocks more of WorkWise Planner."
+                  />
+                }
               />
             </Route>
           </Route>

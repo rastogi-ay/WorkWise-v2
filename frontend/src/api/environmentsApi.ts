@@ -8,18 +8,16 @@ interface EnvironmentsResponse {
   environments: SyncedEnvironment[];
 }
 
-async function handleResponse(response: Response): Promise<EnvironmentsResponse> {
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(`${response.status}: ${data.error}`);
-  }
-  return data;
-}
-
 export const listEnvironments = async (getToken: GetClerkToken): Promise<EnvironmentsResponse> => {
   const headers = await withAuthHeaders(getToken);
   const response = await fetch(`${API_BASE_URL}/api/environments`, { headers });
-  return handleResponse(response);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw Object.assign(new Error(data.error ?? 'Request failed'), { status: response.status });
+  }
+
+  return data;
 };
 
 export const addEnvironment = async (
@@ -36,7 +34,13 @@ export const addEnvironment = async (
     headers,
     body: JSON.stringify({ name, clientApiKey, serverApiKey }),
   });
-  return handleResponse(response);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw Object.assign(new Error(data.error ?? 'Request failed'), { status: response.status });
+  }
+
+  return data;
 };
 
 export const removeEnvironment = async (
@@ -48,7 +52,13 @@ export const removeEnvironment = async (
     method: 'DELETE',
     headers,
   });
-  return handleResponse(response);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw Object.assign(new Error(data.error ?? 'Request failed'), { status: response.status });
+  }
+
+  return data;
 };
 
 export const setActiveEnvironment = async (
@@ -58,10 +68,16 @@ export const setActiveEnvironment = async (
   const headers = await withAuthHeaders(getToken, {
     'Content-Type': 'application/json',
   });
-  const response = await fetch(`${API_BASE_URL}/api/environments/active`, {
+  const response = await fetch(`${API_BASE_URL}/api/environments`, {
     method: 'PUT',
     headers,
     body: JSON.stringify({ name }),
   });
-  return handleResponse(response);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw Object.assign(new Error(data.error ?? 'Request failed'), { status: response.status });
+  }
+
+  return data;
 };

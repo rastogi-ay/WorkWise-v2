@@ -1,5 +1,5 @@
 import { CAMPAIGNS_FEATURE_ID, FeatureDeniedError } from '../stigg/stiggFeatures.js';
-import { estimateCreditUsage, reportUsage } from '../stigg/stiggService.js';
+import { estimateCreditUsage, reportUsage } from '../stigg/stiggClient.js';
 
 async function createCampaign(customerId) {
   const estimatedUsage = await estimateCreditUsage(customerId, CAMPAIGNS_FEATURE_ID, 1);

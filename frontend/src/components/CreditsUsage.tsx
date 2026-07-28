@@ -22,7 +22,10 @@ export default function CreditsUsage() {
 
       <div className="page-content-wrapper">
         <div className="page-content credits-usage__widgets">
-          <CreditUsageChart currencyId={CREDIT_CURRENCY_ID} timeRange={CreditUsageTimeRange.LastMonth} />
+          <CreditUsageChart
+            currencyId={CREDIT_CURRENCY_ID}
+            timeRange={CreditUsageTimeRange.LastMonth}
+          />
           <CreditGrants currencyId={CREDIT_CURRENCY_ID} pageSize={10} />
         </div>
       </div>

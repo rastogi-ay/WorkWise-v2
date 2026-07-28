@@ -11,7 +11,7 @@ export const fetchBillingIntegrationStatus = async (
   getToken: GetClerkToken,
 ): Promise<FetchBillingIntegrationStatusResponse> => {
   const headers = await withAuthHeaders(getToken);
-  const response = await fetch(`${API_BASE_URL}/api/stigg-environment/billing-status`, {
+  const response = await fetch(`${API_BASE_URL}/api/stigg/billing-status`, {
     headers,
   });
   const data = await response.json();

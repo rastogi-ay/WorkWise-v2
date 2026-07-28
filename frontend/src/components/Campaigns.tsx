@@ -69,9 +69,7 @@ export default function Campaigns() {
       />
     );
   } else if (campaignAccess.status === 'denied') {
-    modal = (
-      <AccessDeniedModal featureName="AI campaign generation" pricingUrl={pricingUrl} />
-    );
+    modal = <AccessDeniedModal featureName="AI campaign generation" pricingUrl={pricingUrl} />;
   }
 
   useEffect(() => {

@@ -24,10 +24,33 @@ export async function createCustomer(user) {
       email: user.email,
     }),
   });
-  console.log('Stigg customer created:', response);
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw Object.assign(new Error(errorBody), { status: response.status });
+  }
+  const { data } = await response.json();
+  return data;
+}
 
-  // TODO: add provision subscription, probably in different function though
-  return;
+export async function createSubscription(customerId, planId) {
+  const serverApiKey = await getActiveServerApiKey(customerId);
+  const response = await fetch(`${STIGG_BASE_URL}/subscriptions`, {
+    method: 'POST',
+    headers: {
+      'X-API-KEY': serverApiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      customerId,
+      planId,
+    }),
+  });
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(errorBody);
+  }
+  const { data } = await response.json();
+  return data;
 }
 
 export async function getSubscriptions(customerId) {
@@ -51,6 +74,7 @@ export async function getSubscriptions(customerId) {
 
 export async function getBooleanEntitlement(customerId, featureId) {
   const serverApiKey = await getActiveServerApiKey(customerId);
+  console.log(serverApiKey);
   const url = new URL(`${STIGG_BASE_URL}/customers/${customerId}/entitlements/check`);
   url.searchParams.set('featureId', featureId);
   const response = await fetch(url, {
@@ -59,6 +83,7 @@ export async function getBooleanEntitlement(customerId, featureId) {
       'X-API-KEY': serverApiKey,
     },
   });
+  console.log('response:', response);
   if (!response.ok) {
     const errorBody = await response.text();
     throw new Error(errorBody);
@@ -158,6 +183,7 @@ export async function getIntegrationsCount(customerId) {
       'X-API-KEY': serverApiKey,
       'Content-Type': 'application/json',
     },
+    // TODO: make more general function?
     body: JSON.stringify({
       query: `
         query Node($filter: IntegrationFilter) {

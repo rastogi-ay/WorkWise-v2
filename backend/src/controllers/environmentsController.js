@@ -25,7 +25,7 @@ async function add(req, res) {
     return res.status(201).json({ environments });
   } catch (error) {
     console.error('Failed to add environment:', error);
-    return res.status(400).json({ error: error.message || 'Failed to add environment' });
+    return res.status(400).json({ error: error.message });
   }
 }
 
@@ -38,7 +38,7 @@ async function remove(req, res) {
     return res.status(200).json({ environments });
   } catch (error) {
     console.error('Failed to remove environment:', error);
-    return res.status(400).json({ error: error.message || 'Failed to remove environment' });
+    return res.status(400).json({ error: error.message });
   }
 }
 
@@ -51,13 +51,13 @@ async function setActive(req, res) {
     return res.status(200).json({ environments });
   } catch (error) {
     console.error('Failed to set active environment:', error);
-    return res.status(400).json({ error: error.message || 'Failed to set active environment' });
+    return res.status(400).json({ error: error.message });
   }
 }
 
 router.get('/', requireAuth, list);
 router.post('/', requireAuth, add);
 router.delete('/:name', requireAuth, remove);
-router.put('/active', requireAuth, setActive);
+router.put('/', requireAuth, setActive);
 
 export default router;

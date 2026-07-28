@@ -69,9 +69,7 @@ export default function Sequences() {
       />
     );
   } else if (sequenceAccess.status === 'denied') {
-    modal = (
-      <AccessDeniedModal featureName="AI sequence generation" pricingUrl={pricingUrl} />
-    );
+    modal = <AccessDeniedModal featureName="AI sequence generation" pricingUrl={pricingUrl} />;
   }
 
   useEffect(() => {

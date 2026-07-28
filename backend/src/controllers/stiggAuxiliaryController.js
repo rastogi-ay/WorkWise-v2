@@ -1,8 +1,11 @@
 import express from 'express';
-import { getIntegrationsCount } from '../stigg/stiggService.js';
+import { getIntegrationsCount } from '../stigg/stiggClient.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 
 const router = express.Router();
+
+// goes directly to stiggClient.js file; no dedicated service w/ business logic
+// should only be used for simple information lookup from Stigg
 
 async function fetchBillingIntegrationStatus(req, res) {
   const customerId = req.stiggCustomerId;
