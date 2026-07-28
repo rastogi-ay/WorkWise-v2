@@ -1,15 +1,14 @@
 import express from 'express';
 import * as sequencesService from '../services/sequencesService.js';
-import { FeatureDeniedError } from '../stigg/stiggFeatures.js';
+import { FeatureDeniedError } from '../stigg/constants.js';
 import { requireAuth } from '../middleware/requireAuth.js';
+import { resolveStiggContext } from '../middleware/resolveStiggContext.js';
 
 const router = express.Router();
 
 async function addSequence(req, res) {
-  const customerId = req.stiggCustomerId;
-
   try {
-    const usage = await sequencesService.createSequence(customerId);
+    const usage = await sequencesService.createSequence(req.stiggServerApiKey, req.customerId);
     console.log('Sequences Usage:', usage);
     return res.status(201).json({
       usageLimit: usage.credit.usageLimit,
@@ -28,10 +27,11 @@ async function addSequence(req, res) {
 }
 
 async function fetchSequencesCreditRate(req, res) {
-  const customerId = req.stiggCustomerId;
-
   try {
-    const rate = await sequencesService.getSequencesCreditRate(customerId);
+    const rate = await sequencesService.getSequencesCreditRate(
+      req.stiggServerApiKey,
+      req.customerId,
+    );
     console.log('Sequences Credit Rate:', rate);
     return res.status(200).json({
       rate,
@@ -49,6 +49,6 @@ async function fetchSequencesCreditRate(req, res) {
   }
 }
 
-router.post('/', requireAuth, addSequence);
-router.get('/rate', requireAuth, fetchSequencesCreditRate);
+router.post('/', requireAuth, resolveStiggContext, addSequence);
+router.get('/rate', requireAuth, resolveStiggContext, fetchSequencesCreditRate);
 export default router;

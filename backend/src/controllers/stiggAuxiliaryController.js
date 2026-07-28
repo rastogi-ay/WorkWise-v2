@@ -1,6 +1,7 @@
 import express from 'express';
 import { getIntegrationsCount } from '../stigg/stiggClient.js';
 import { requireAuth } from '../middleware/requireAuth.js';
+import { resolveStiggContext } from '../middleware/resolveStiggContext.js';
 
 const router = express.Router();
 
@@ -8,10 +9,8 @@ const router = express.Router();
 // should only be used for simple information lookup from Stigg
 
 async function fetchBillingIntegrationStatus(req, res) {
-  const customerId = req.stiggCustomerId;
-
   try {
-    const totalCount = await getIntegrationsCount(customerId);
+    const totalCount = await getIntegrationsCount(req.stiggServerApiKey);
     const billingIntegrationExists = totalCount > 0;
     console.log('Billing Integration Exists:', billingIntegrationExists);
     return res.status(200).json({ billingIntegrationExists });
@@ -21,5 +20,5 @@ async function fetchBillingIntegrationStatus(req, res) {
   }
 }
 
-router.get('/billing-status', requireAuth, fetchBillingIntegrationStatus);
+router.get('/billing-status', requireAuth, resolveStiggContext, fetchBillingIntegrationStatus);
 export default router;

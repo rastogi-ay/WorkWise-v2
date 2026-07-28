@@ -1,15 +1,14 @@
 import express from 'express';
 import * as campaignsService from '../services/campaignsService.js';
-import { FeatureDeniedError } from '../stigg/stiggFeatures.js';
+import { FeatureDeniedError } from '../stigg/constants.js';
 import { requireAuth } from '../middleware/requireAuth.js';
+import { resolveStiggContext } from '../middleware/resolveStiggContext.js';
 
 const router = express.Router();
 
 async function addCampaign(req, res) {
-  const customerId = req.stiggCustomerId;
-
   try {
-    const usage = await campaignsService.createCampaign(customerId);
+    const usage = await campaignsService.createCampaign(req.stiggServerApiKey, req.customerId);
     console.log('Campaigns Usage:', usage);
     return res.status(201).json({
       usageLimit: usage.credit.usageLimit,
@@ -29,10 +28,11 @@ async function addCampaign(req, res) {
 }
 
 async function fetchCampaignsCreditRate(req, res) {
-  const customerId = req.stiggCustomerId;
-
   try {
-    const rate = await campaignsService.getCampaignsCreditRate(customerId);
+    const rate = await campaignsService.getCampaignsCreditRate(
+      req.stiggServerApiKey,
+      req.customerId,
+    );
     console.log('Campaigns Credit Rate:', rate);
     return res.status(200).json({
       rate,
@@ -49,6 +49,6 @@ async function fetchCampaignsCreditRate(req, res) {
   }
 }
 
-router.post('/', requireAuth, addCampaign);
-router.get('/rate', requireAuth, fetchCampaignsCreditRate);
+router.post('/', requireAuth, resolveStiggContext, addCampaign);
+router.get('/rate', requireAuth, resolveStiggContext, fetchCampaignsCreditRate);
 export default router;

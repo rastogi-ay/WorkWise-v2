@@ -6,7 +6,7 @@ import { requireAuth } from '../middleware/requireAuth.js';
 const router = express.Router();
 
 async function sync(req, res) {
-  const clerkId = req.stiggCustomerId;
+  const clerkId = req.clerkId;
 
   try {
     const user = await syncUser(clerkId);

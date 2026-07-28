@@ -1,14 +1,17 @@
 import express from 'express';
 import * as creditsService from '../services/creditsService.js';
 import { requireAuth } from '../middleware/requireAuth.js';
+import { resolveStiggContext } from '../middleware/resolveStiggContext.js';
 
 const router = express.Router();
 
 async function fetchCreditBalance(req, res) {
-  const customerId = req.stiggCustomerId;
-
   try {
-    const entitlement = await creditsService.getCreditBalance(customerId);
+    const entitlement = await creditsService.getCreditBalance(
+      req.stiggServerApiKey,
+      req.customerId,
+    );
+    // TODO: add soft limits
     console.log('Credits Entitlement:', entitlement);
     return res.status(200).json({
       usageLimit: entitlement.usageLimit,
@@ -23,5 +26,5 @@ async function fetchCreditBalance(req, res) {
   }
 }
 
-router.get('/', requireAuth, fetchCreditBalance);
+router.get('/', requireAuth, resolveStiggContext, fetchCreditBalance);
 export default router;

@@ -1,7 +1,7 @@
 import { clerkClient } from '@clerk/express';
 import { User } from '../models/User.js';
 import { createCustomer, createSubscription } from '../stigg/stiggClient.js';
-import { WORKWISE_AI_FREE_PLAN_ID } from '../stigg/stiggFeatures.js';
+import { WORKWISE_AI_FREE_PLAN_ID } from '../stigg/constants.js';
 
 async function syncUser(clerkId) {
   const existing = await User.findOneAndUpdate(
@@ -9,6 +9,7 @@ async function syncUser(clerkId) {
     { $set: { lastSeenAt: new Date() } },
     { returnDocument: 'after' },
   );
+
   if (existing) return ensureOnboarded(existing);
 
   const clerkUser = await clerkClient.users.getUser(clerkId);
@@ -27,7 +28,16 @@ async function syncUser(clerkId) {
           lastName: clerkUser.lastName,
           lastSeenAt: new Date(),
         },
-        $setOnInsert: { clerkId },
+        $setOnInsert: {
+          clerkId,
+          activeEnvironment: 'Default',
+          'environments.Default': {
+            clientApiKey: process.env.DEFAULT_STIGG_CLIENT_API_KEY,
+            serverApiKey: process.env.DEFAULT_STIGG_SERVER_API_KEY,
+            activeCustomerId: clerkId,
+            customers: [{ customerId: clerkId, stiggOnboarded: false, createdAt: new Date() }],
+          },
+        },
       },
       { upsert: true, returnDocument: 'after' },
     );
@@ -48,29 +58,49 @@ async function syncUser(clerkId) {
   }
 }
 
-// Provisions a user in Stigg if they haven't been already, retrying on every sync until it succeeds.
-async function ensureOnboarded(user) {
-  if (user.stiggOnboarded) return user;
-
+async function onboardCustomer(serverApiKey, customerId, { name, email } = {}) {
   let customer;
   try {
-    customer = await createCustomer(user);
+    customer = await createCustomer(serverApiKey, customerId, { name, email });
   } catch (error) {
-    // 409 means the customer already exists (e.g. a prior attempt got this far before failing
-    // on the subscription step) — treat that as success rather than erroring.
     if (error.status !== 409) throw error;
-    customer = { id: user.clerkId };
+    customer = { id: customerId };
   }
 
-  // TODO: add flexibility around what plan the user wants to subscribe the customer to?
-  await createSubscription(customer.id, WORKWISE_AI_FREE_PLAN_ID);
-
-  const updated = await User.findOneAndUpdate(
-    { clerkId: user.clerkId },
-    { $set: { stiggOnboarded: true } },
-    { returnDocument: 'after' },
-  );
-  return updated ?? user;
+  await createSubscription(serverApiKey, customer.id, WORKWISE_AI_FREE_PLAN_ID);
+  return customer;
 }
 
-export { syncUser };
+async function ensureOnboarded(user) {
+  for (const [envName, env] of user.environments ?? new Map()) {
+    for (const customer of env.customers ?? []) {
+      if (customer.stiggOnboarded) continue;
+
+      try {
+        // Only the user's own clerkId-customer (Default's signup-time customer) gets a real
+        // name/email — everything else is a user-chosen, arbitrary customer with no profile
+        // to draw from, and stays ID-only per how it's created.
+        const profile =
+          customer.customerId === user.clerkId
+            ? { name: `${user.firstName} ${user.lastName}`, email: user.email }
+            : {};
+        await onboardCustomer(env.serverApiKey, customer.customerId, profile);
+
+        await User.findOneAndUpdate(
+          {
+            clerkId: user.clerkId,
+            [`environments.${envName}.customers.customerId`]: customer.customerId,
+          },
+          { $set: { [`environments.${envName}.customers.$.stiggOnboarded`]: true } },
+        );
+      } catch (error) {
+        console.error(`Onboarding retry failed for ${customer.customerId} in ${envName}:`, error);
+        // swallowed — retried again on next sync
+      }
+    }
+  }
+
+  return User.findOne({ clerkId: user.clerkId });
+}
+
+export { syncUser, onboardCustomer };

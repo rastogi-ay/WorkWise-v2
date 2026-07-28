@@ -3,10 +3,29 @@ import { withAuthHeaders } from './clerkAuth';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+export interface SyncedCustomer {
+  customerId: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  isActive: boolean;
+  stiggOnboarded: boolean;
+}
+
+// Optional profile fields a user can supply when creating a customer (never required, unlike
+// the clerkId-customer, which always gets these from the Clerk profile automatically).
+export interface CustomerProfileInput {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
+
 export interface SyncedEnvironment {
   name: string;
   clientApiKey: string;
   isActive: boolean;
+  activeCustomerId: string;
+  customers: SyncedCustomer[];
 }
 
 export interface SyncedUser {

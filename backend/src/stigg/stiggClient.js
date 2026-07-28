@@ -1,17 +1,7 @@
-import { User } from '../models/User.js';
-
 export const STIGG_BASE_URL = 'https://api.stigg.io/api/v1';
 export const STIGG_GRAPHQL_URL = 'https://api.stigg.io/graphql';
 
-// Used on every request to get the Stigg API key from the environment the user is currently on
-async function getActiveServerApiKey(clerkId) {
-  const user = await User.findOne({ clerkId });
-  const activeEnv = user?.activeEnvironment ? user.environments?.get(user.activeEnvironment) : null;
-  return activeEnv?.serverApiKey ?? process.env.DEFAULT_STIGG_SERVER_API_KEY;
-}
-
-export async function createCustomer(user) {
-  const serverApiKey = await getActiveServerApiKey(user.clerkId);
+export async function createCustomer(serverApiKey, customerId, { name, email } = {}) {
   const response = await fetch(`${STIGG_BASE_URL}/customers`, {
     method: 'POST',
     headers: {
@@ -19,9 +9,9 @@ export async function createCustomer(user) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      id: user.clerkId,
-      name: `${user.firstName} ${user.lastName}`,
-      email: user.email,
+      id: customerId,
+      ...(name ? { name } : {}),
+      ...(email ? { email } : {}),
     }),
   });
   if (!response.ok) {
@@ -32,8 +22,7 @@ export async function createCustomer(user) {
   return data;
 }
 
-export async function createSubscription(customerId, planId) {
-  const serverApiKey = await getActiveServerApiKey(customerId);
+export async function createSubscription(serverApiKey, customerId, planId) {
   const response = await fetch(`${STIGG_BASE_URL}/subscriptions`, {
     method: 'POST',
     headers: {
@@ -47,14 +36,13 @@ export async function createSubscription(customerId, planId) {
   });
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(errorBody);
+    throw Object.assign(new Error(errorBody), { status: response.status });
   }
   const { data } = await response.json();
   return data;
 }
 
-export async function getSubscriptions(customerId) {
-  const serverApiKey = await getActiveServerApiKey(customerId);
+export async function getSubscriptions(serverApiKey, customerId) {
   const url = new URL(`${STIGG_BASE_URL}/subscriptions`);
   url.searchParams.set('customerId', customerId);
   const response = await fetch(url, {
@@ -72,9 +60,7 @@ export async function getSubscriptions(customerId) {
   return data;
 }
 
-export async function getBooleanEntitlement(customerId, featureId) {
-  const serverApiKey = await getActiveServerApiKey(customerId);
-  console.log(serverApiKey);
+export async function getBooleanEntitlement(serverApiKey, customerId, featureId) {
   const url = new URL(`${STIGG_BASE_URL}/customers/${customerId}/entitlements/check`);
   url.searchParams.set('featureId', featureId);
   const response = await fetch(url, {
@@ -83,7 +69,6 @@ export async function getBooleanEntitlement(customerId, featureId) {
       'X-API-KEY': serverApiKey,
     },
   });
-  console.log('response:', response);
   if (!response.ok) {
     const errorBody = await response.text();
     throw new Error(errorBody);
@@ -92,8 +77,7 @@ export async function getBooleanEntitlement(customerId, featureId) {
   return data;
 }
 
-export async function getNumericEntitlement(customerId, featureId, requestedUsage) {
-  const serverApiKey = await getActiveServerApiKey(customerId);
+export async function getNumericEntitlement(serverApiKey, customerId, featureId, requestedUsage) {
   const url = new URL(`${STIGG_BASE_URL}/customers/${customerId}/entitlements/check`);
   url.searchParams.set('featureId', featureId);
   if (requestedUsage !== undefined) {
@@ -113,8 +97,7 @@ export async function getNumericEntitlement(customerId, featureId, requestedUsag
   return data;
 }
 
-export async function getCreditEntitlement(customerId, currencyId) {
-  const serverApiKey = await getActiveServerApiKey(customerId);
+export async function getCreditEntitlement(serverApiKey, customerId, currencyId) {
   const url = new URL(`${STIGG_BASE_URL}/customers/${customerId}/entitlements/check`);
   url.searchParams.set('currencyId', currencyId);
   const response = await fetch(url, {
@@ -132,8 +115,7 @@ export async function getCreditEntitlement(customerId, currencyId) {
   return data;
 }
 
-export async function estimateCreditUsage(customerId, featureId, value) {
-  const serverApiKey = await getActiveServerApiKey(customerId);
+export async function estimateCreditUsage(serverApiKey, customerId, featureId, value) {
   const response = await fetch(`${STIGG_BASE_URL}/usage/estimate`, {
     method: 'POST',
     headers: {
@@ -155,8 +137,7 @@ export async function estimateCreditUsage(customerId, featureId, value) {
   return data.estimates[0];
 }
 
-export async function reportUsage(customerId, featureId, value) {
-  const serverApiKey = await getActiveServerApiKey(customerId);
+export async function reportUsage(serverApiKey, customerId, featureId, value) {
   const response = await fetch(`${STIGG_BASE_URL}/usage`, {
     method: 'POST',
     headers: {
@@ -175,15 +156,13 @@ export async function reportUsage(customerId, featureId, value) {
   return data[0];
 }
 
-export async function getIntegrationsCount(customerId) {
-  const serverApiKey = await getActiveServerApiKey(customerId);
+export async function getIntegrationsCount(serverApiKey) {
   const response = await fetch(STIGG_GRAPHQL_URL, {
     method: 'POST',
     headers: {
       'X-API-KEY': serverApiKey,
       'Content-Type': 'application/json',
     },
-    // TODO: make more general function?
     body: JSON.stringify({
       query: `
         query Node($filter: IntegrationFilter) {

@@ -1,4 +1,5 @@
 import { User } from '../models/User.js';
+import { onboardCustomer } from './usersService.js';
 
 function toSafeEnvironmentList(user) {
   const environments = user.environments ?? new Map();
@@ -6,6 +7,15 @@ function toSafeEnvironmentList(user) {
     name,
     clientApiKey: env.clientApiKey,
     isActive: name === user.activeEnvironment,
+    activeCustomerId: env.activeCustomerId,
+    customers: (env.customers ?? []).map((customer) => ({
+      customerId: customer.customerId,
+      firstName: customer.firstName,
+      lastName: customer.lastName,
+      email: customer.email,
+      isActive: customer.customerId === env.activeCustomerId,
+      stiggOnboarded: customer.stiggOnboarded,
+    })),
   }));
 }
 
@@ -14,9 +24,15 @@ async function listEnvironments(clerkId) {
   return user ? toSafeEnvironmentList(user) : [];
 }
 
-async function addEnvironment(clerkId, name, { clientApiKey, serverApiKey }) {
-  if (!name || !clientApiKey || !serverApiKey) {
-    throw new Error('name, clientApiKey, and serverApiKey are required');
+// Creating an environment and provisioning its first customer happen as one atomic operation:
+// a new environment never exists in Mongo without a confirmed Stigg customer.
+async function addEnvironment(
+  clerkId,
+  name,
+  { clientApiKey, serverApiKey, customerId, firstName, lastName, email },
+) {
+  if (!name || !clientApiKey || !serverApiKey || !customerId) {
+    throw new Error('name, clientApiKey, serverApiKey, and customerId are required');
   }
   if (!clientApiKey.startsWith('client')) {
     throw new Error('clientApiKey must start with "client"');
@@ -31,9 +47,30 @@ async function addEnvironment(clerkId, name, { clientApiKey, serverApiKey }) {
     throw new Error(`Environment "${name}" already exists`);
   }
 
+  const customerName = [firstName, lastName].filter(Boolean).join(' ') || undefined;
+  await onboardCustomer(serverApiKey, customerId, { name: customerName, email });
+
   const user = await User.findOneAndUpdate(
     { clerkId },
-    { $set: { [`environments.${name}`]: { clientApiKey, serverApiKey } } },
+    {
+      $set: {
+        [`environments.${name}`]: {
+          clientApiKey,
+          serverApiKey,
+          activeCustomerId: customerId,
+          customers: [
+            {
+              customerId,
+              firstName: firstName || null,
+              lastName: lastName || null,
+              email: email || null,
+              stiggOnboarded: true,
+              createdAt: new Date(),
+            },
+          ],
+        },
+      },
+    },
     { returnDocument: 'after' },
   );
   if (!user) throw new Error('User not found');

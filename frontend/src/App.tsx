@@ -6,7 +6,7 @@ import Analytics from './components/Analytics';
 import Campaigns from './components/Campaigns';
 import Sequences from './components/Sequences';
 import CreditsUsage from './components/CreditsUsage';
-import ManageEnvironments from './components/ManageEnvironments';
+import StiggSettings from './components/StiggSettings';
 import { PaywallPage, PRICING_URL_BY_PRODUCT_ID } from './components/PaywallPage';
 import { WORKWISE_AI_PRODUCT_ID, WORKWISE_PLANNER_PRODUCT_ID } from './stigg/constants';
 import { UserProvider, useSyncedUser } from './UserContext';
@@ -29,34 +29,42 @@ function ProtectedLayout() {
   );
 }
 
-function StiggAndOutlet() {
-  const { user: syncedUser, isLoading } = useSyncedUser();
+// Sidebar + layout only — no Stigg-specific logic, so pages like /stigg-settings (which is how a
+// user would fix a missing/invalid Stigg context in the first place) are always reachable here.
+function AppShell() {
+  const { isLoading } = useSyncedUser();
 
   if (isLoading) {
     return <PageLoading />;
   }
 
-  // clerkId of user will always match customerId in Stigg (for simplicity)
-  // TODO: remove this comment (this is going to be false)
-  const customerId = syncedUser?.clerkId;
-  if (!customerId) {
-    return (
-      // TODO: maybe add a default npc@stigg.io customer?
-      <div className="app-loading">No corresponding customer ID in Stigg was found.</div>
-    );
-  }
+  return (
+    <div className="app-shell">
+      <Sidebar />
+      <main className="app-shell__content">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+
+// Resolves which Stigg customer the app should act as (the active environment's active
+// customer) and wraps everything below in a StiggProvider for that context.
+function StiggGate() {
+  const { user: syncedUser } = useSyncedUser();
 
   const activeEnv = syncedUser?.environments.find((env) => env.isActive);
-  const apiKey = activeEnv?.clientApiKey ?? import.meta.env.VITE_DEFAULT_STIGG_CLIENT_API_KEY;
+  const customerId = activeEnv?.activeCustomerId ?? syncedUser?.clerkId;
+
+  if (!activeEnv || !customerId) {
+    return <div className="app-loading">No active Stigg customer for this environment.</div>;
+  }
+
+  const apiKey = activeEnv.clientApiKey ?? import.meta.env.VITE_DEFAULT_STIGG_CLIENT_API_KEY;
 
   return (
-    <StiggProvider key={activeEnv?.name ?? 'Default'} apiKey={apiKey} customerId={customerId}>
-      <div className="app-shell">
-        <Sidebar />
-        <main className="app-shell__content">
-          <Outlet />
-        </main>
-      </div>
+    <StiggProvider key={`${activeEnv.name}:${customerId}`} apiKey={apiKey} customerId={customerId}>
+      <Outlet />
     </StiggProvider>
   );
 }
@@ -83,32 +91,34 @@ export default function App() {
             }
           />
           <Route element={<ProtectedLayout />}>
-            <Route element={<StiggAndOutlet />}>
-              <Route path="/" element={<Analytics />} />
-              <Route path="/campaigns" element={<Campaigns />} />
-              <Route path="/sequences" element={<Sequences />} />
-              <Route path="/credits" element={<CreditsUsage />} />
-              <Route path="/environments" element={<ManageEnvironments />} />
-              <Route
-                path={PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID]}
-                element={
-                  <PaywallPage
-                    productId={WORKWISE_AI_PRODUCT_ID}
-                    title="Pricing"
-                    subtitle="Choose a plan that unlocks more of WorkWise AI."
-                  />
-                }
-              />
-              <Route
-                path={PRICING_URL_BY_PRODUCT_ID[WORKWISE_PLANNER_PRODUCT_ID]}
-                element={
-                  <PaywallPage
-                    productId={WORKWISE_PLANNER_PRODUCT_ID}
-                    title="Pricing"
-                    subtitle="Choose a plan that unlocks more of WorkWise Planner."
-                  />
-                }
-              />
+            <Route element={<AppShell />}>
+              <Route path="/stigg-settings" element={<StiggSettings />} />
+              <Route element={<StiggGate />}>
+                <Route path="/" element={<Analytics />} />
+                <Route path="/campaigns" element={<Campaigns />} />
+                <Route path="/sequences" element={<Sequences />} />
+                <Route path="/credits" element={<CreditsUsage />} />
+                <Route
+                  path={PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID]}
+                  element={
+                    <PaywallPage
+                      productId={WORKWISE_AI_PRODUCT_ID}
+                      title="Pricing"
+                      subtitle="Choose a plan that unlocks more of WorkWise AI."
+                    />
+                  }
+                />
+                <Route
+                  path={PRICING_URL_BY_PRODUCT_ID[WORKWISE_PLANNER_PRODUCT_ID]}
+                  element={
+                    <PaywallPage
+                      productId={WORKWISE_PLANNER_PRODUCT_ID}
+                      title="Pricing"
+                      subtitle="Choose a plan that unlocks more of WorkWise Planner."
+                    />
+                  }
+                />
+              </Route>
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
