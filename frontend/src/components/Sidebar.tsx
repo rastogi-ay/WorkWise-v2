@@ -1,7 +1,15 @@
 import { NavLink } from 'react-router-dom';
 import { UserButton } from '@clerk/react';
 import { useTheme } from '../ThemeContext';
-import { ChartIcon, MegaphoneIcon, MailIcon, CoinIcon, SunIcon, MoonIcon } from '../extras/icons';
+import {
+  ChartIcon,
+  MegaphoneIcon,
+  MailIcon,
+  CoinIcon,
+  UserIcon,
+  SunIcon,
+  MoonIcon,
+} from '../extras/icons';
 import '../styles/Sidebar.css';
 
 const NAV_ITEMS = [
@@ -10,7 +18,10 @@ const NAV_ITEMS = [
   { to: '/sequences', label: 'Sequences', Icon: MailIcon },
 ];
 
-const SECONDARY_NAV_ITEMS = [{ to: '/credits', label: 'Credits', Icon: CoinIcon }];
+const SECONDARY_NAV_ITEMS = [
+  { to: '/customer-portal', label: 'Customer Portal', Icon: UserIcon },
+  { to: '/credits', label: 'Credits', Icon: CoinIcon },
+];
 
 function renderNavLink({ to, label, Icon }: (typeof NAV_ITEMS)[number]) {
   return (

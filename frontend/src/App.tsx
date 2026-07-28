@@ -6,6 +6,7 @@ import Analytics from './components/Analytics';
 import Campaigns from './components/Campaigns';
 import Sequences from './components/Sequences';
 import CreditsUsage from './components/CreditsUsage';
+import CustomerPortal from './components/CustomerPortal';
 import StiggSettings from './components/StiggSettings';
 import { PaywallPage, PRICING_URL_BY_PRODUCT_ID } from './components/PaywallPage';
 import { WORKWISE_AI_PRODUCT_ID, WORKWISE_PLANNER_PRODUCT_ID } from './stigg/constants';
@@ -97,6 +98,7 @@ export default function App() {
                 <Route path="/" element={<Analytics />} />
                 <Route path="/campaigns" element={<Campaigns />} />
                 <Route path="/sequences" element={<Sequences />} />
+                <Route path="/customer-portal" element={<CustomerPortal />} />
                 <Route path="/credits" element={<CreditsUsage />} />
                 <Route
                   path={PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID]}
