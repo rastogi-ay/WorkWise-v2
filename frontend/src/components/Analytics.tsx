@@ -20,7 +20,7 @@ import { PRICING_URL_BY_PRODUCT_ID } from './PaywallPage';
 import { WORKWISE_AI_PRODUCT_ID } from '../stigg/constants';
 import { PageLoading } from '../extras/PageLoading';
 
-const pricingUrl = PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID];
+const PRICING_URL = PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID];
 
 export default function Analytics() {
   const { getToken } = useAuth();
@@ -37,7 +37,7 @@ export default function Analytics() {
     modal = (
       <AccessDeniedModal
         featureName="detailed productivity insights and analytics"
-        pricingUrl={pricingUrl}
+        pricingUrl={PRICING_URL}
       />
     );
   }

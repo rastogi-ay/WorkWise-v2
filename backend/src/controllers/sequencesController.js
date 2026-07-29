@@ -1,6 +1,6 @@
 import express from 'express';
 import * as sequencesService from '../services/sequencesService.js';
-import { FeatureDeniedError } from '../stigg/constants.js';
+import { sendHttpError } from '../httpErrors.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { resolveStiggContext } from '../middleware/resolveStiggContext.js';
 
@@ -15,14 +15,7 @@ async function addSequence(req, res) {
       currentUsage: usage.credit.currentUsage,
     });
   } catch (error) {
-    if (error instanceof FeatureDeniedError) {
-      console.log(error.message);
-      return res.status(403).json({});
-    }
-    console.error('Failed to create sequence:', error);
-    return res.status(500).json({
-      error: 'Failed to create sequence.',
-    });
+    return sendHttpError(error, res, 'Failed to create sequence.');
   }
 }
 
@@ -37,15 +30,7 @@ async function fetchSequencesCreditRate(req, res) {
       rate,
     });
   } catch (error) {
-    if (error instanceof FeatureDeniedError) {
-      console.log(error.message);
-      return res.status(403).json({});
-    }
-    console.error('Failed to get sequence credit rate:', error);
-    return res.status(500).json({
-      access: false,
-      error: 'Failed to get sequence credit rate.',
-    });
+    return sendHttpError(error, res, 'Failed to get sequence credit rate.');
   }
 }
 

@@ -17,7 +17,7 @@ export function ChartIcon({ size = 20 }: IconProps) {
   );
 }
 
-export function MegaphoneIcon({ size = 20 }: IconProps) {
+export function ChatIcon({ size = 20 }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -27,8 +27,7 @@ export function MegaphoneIcon({ size = 20 }: IconProps) {
       stroke="currentColor"
       strokeWidth="1.8"
     >
-      <path d="m3 11 18-5v12L3 14v-3z" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4 5h16v10H9l-5 4V5Z" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

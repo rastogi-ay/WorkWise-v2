@@ -2,7 +2,7 @@
 // ** all metered features are expected to be synchronous (calculated usage)
 export const CREDIT_CURRENCY = 'cred-type-credits';
 export const ANALYTICS_FEATURE_ID = 'feature-analytics';
-export const CAMPAIGNS_FEATURE_ID = 'feature-marketing-campaign';
+export const AI_TOKENS_FEATURE_ID = 'feature-ai-tokens';
 export const SEQUENCES_FEATURE_ID = 'feature-email-sequences';
 
 // Product IDs
@@ -11,15 +11,3 @@ export const WORKWISE_PLANNER_PRODUCT_ID = 'product-work-wise-planner';
 
 // Plan IDs
 export const WORKWISE_AI_FREE_PLAN_ID = 'plan-work-wise-ai-free';
-
-// Error class for feature denied errors to be thrown after entitlement checks
-export class FeatureDeniedError extends Error {
-  constructor(message, details = null) {
-    // Append the details to the message string directly
-    const fullMessage = details ? `${message} | Details: ${JSON.stringify(details)}` : message;
-
-    super(fullMessage);
-    this.name = 'FeatureDeniedError';
-    this.details = details;
-  }
-}

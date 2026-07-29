@@ -1,5 +1,6 @@
 import { User } from '../models/User.js';
-import { onboardCustomer } from './usersService.js';
+import { onboardUser } from './usersService.js';
+import { BadRequestError, ConflictError, NotFoundError } from '../httpErrors.js';
 
 function toSafeEnvironmentList(user) {
   const environments = user.environments ?? new Map();
@@ -31,24 +32,14 @@ async function addEnvironment(
   name,
   { clientApiKey, serverApiKey, customerId, firstName, lastName, email },
 ) {
-  if (!name || !clientApiKey || !serverApiKey || !customerId) {
-    throw new Error('name, clientApiKey, serverApiKey, and customerId are required');
-  }
-  if (!clientApiKey.startsWith('client')) {
-    throw new Error('clientApiKey must start with "client"');
-  }
-  if (!serverApiKey.startsWith('server')) {
-    throw new Error('serverApiKey must start with "server"');
-  }
-
   const existing = await User.findOne({ clerkId });
-  if (!existing) throw new Error('User not found');
+  if (!existing) throw new NotFoundError('User not found');
   if ((existing.environments ?? new Map()).has(name)) {
-    throw new Error(`Environment "${name}" already exists`);
+    throw new ConflictError(`Environment "${name}" already exists`);
   }
 
   const customerName = [firstName, lastName].filter(Boolean).join(' ') || undefined;
-  await onboardCustomer(serverApiKey, customerId, { name: customerName, email });
+  await onboardUser(serverApiKey, customerId, { name: customerName, email });
 
   const user = await User.findOneAndUpdate(
     { clerkId },
@@ -73,20 +64,19 @@ async function addEnvironment(
     },
     { returnDocument: 'after' },
   );
-  if (!user) throw new Error('User not found');
+  if (!user) throw new NotFoundError('User not found');
   return toSafeEnvironmentList(user);
 }
 
 async function removeEnvironment(clerkId, name) {
-  if (name === 'Default') {
-    throw new Error('The Default environment cannot be removed');
-  }
-
   const user = await User.findOne({ clerkId });
-  if (!user) throw new Error('User not found');
+  if (!user) throw new NotFoundError('User not found');
 
+  if (!(user.environments ?? new Map()).has(name)) {
+    throw new NotFoundError(`Environment "${name}" does not exist`);
+  }
   if (user.activeEnvironment === name) {
-    throw new Error('The active environment cannot be removed');
+    throw new BadRequestError('The active environment cannot be removed');
   }
 
   const updated = await User.findOneAndUpdate(
@@ -99,10 +89,10 @@ async function removeEnvironment(clerkId, name) {
 
 async function setActiveEnvironment(clerkId, name) {
   const user = await User.findOne({ clerkId });
-  if (!user) throw new Error('User not found');
+  if (!user) throw new NotFoundError('User not found');
 
   if (name !== null && !(user.environments ?? new Map()).has(name)) {
-    throw new Error(`Environment "${name}" does not exist`);
+    throw new NotFoundError(`Environment "${name}" does not exist`);
   }
 
   const updated = await User.findOneAndUpdate(

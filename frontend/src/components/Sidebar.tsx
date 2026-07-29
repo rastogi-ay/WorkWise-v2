@@ -3,7 +3,7 @@ import { UserButton } from '@clerk/react';
 import { useTheme } from '../ThemeContext';
 import {
   ChartIcon,
-  MegaphoneIcon,
+  ChatIcon,
   MailIcon,
   CoinIcon,
   UserIcon,
@@ -14,7 +14,7 @@ import '../styles/Sidebar.css';
 
 const NAV_ITEMS = [
   { to: '/analytics', label: 'Analytics', Icon: ChartIcon },
-  { to: '/campaigns', label: 'Campaigns', Icon: MegaphoneIcon },
+  { to: '/tokens', label: 'AI Tokens', Icon: ChatIcon },
   { to: '/sequences', label: 'Sequences', Icon: MailIcon },
 ];
 

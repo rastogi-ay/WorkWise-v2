@@ -58,7 +58,7 @@ async function syncUser(clerkId) {
   }
 }
 
-async function onboardCustomer(serverApiKey, customerId, { name, email } = {}) {
+async function onboardUser(serverApiKey, customerId, { name, email } = {}) {
   let customer;
   try {
     customer = await createCustomer(serverApiKey, customerId, { name, email });
@@ -84,7 +84,7 @@ async function ensureOnboarded(user) {
           customer.customerId === user.clerkId
             ? { name: `${user.firstName} ${user.lastName}`, email: user.email }
             : {};
-        await onboardCustomer(env.serverApiKey, customer.customerId, profile);
+        await onboardUser(env.serverApiKey, customer.customerId, profile);
 
         await User.findOneAndUpdate(
           {
@@ -103,4 +103,4 @@ async function ensureOnboarded(user) {
   return User.findOne({ clerkId: user.clerkId });
 }
 
-export { syncUser, onboardCustomer };
+export { syncUser, onboardUser };

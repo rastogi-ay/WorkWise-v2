@@ -2,6 +2,7 @@ import express from 'express';
 import { syncUser } from '../services/usersService.js';
 import { toSafeEnvironmentList } from '../services/environmentsService.js';
 import { requireAuth } from '../middleware/requireAuth.js';
+import { sendHttpError } from '../httpErrors.js';
 
 const router = express.Router();
 
@@ -17,8 +18,7 @@ async function sync(req, res) {
       activeEnvironment: user.activeEnvironment,
     });
   } catch (error) {
-    console.error('Failed to sync user:', error);
-    return res.status(500).json({ error: 'Failed to sync user' });
+    return sendHttpError(error, res, 'Failed to sync user.');
   }
 }
 

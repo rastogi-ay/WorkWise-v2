@@ -14,7 +14,7 @@ import { WORKWISE_AI_PRODUCT_ID } from '../stigg/constants';
 import { CreditBalance } from './CreditBalance';
 import { PageLoading } from '../extras/PageLoading';
 
-const pricingUrl = PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID];
+const PRICING_URL = PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID];
 
 interface Sequence {
   name: string;
@@ -64,12 +64,12 @@ export default function Sequences() {
     modal = (
       <InsufficientBalanceModal
         featureName="AI sequence generation"
-        pricingUrl={pricingUrl}
+        pricingUrl={PRICING_URL}
         onClose={() => setDismissedPaywall(true)}
       />
     );
   } else if (sequenceAccess.status === 'denied') {
-    modal = <AccessDeniedModal featureName="AI sequence generation" pricingUrl={pricingUrl} />;
+    modal = <AccessDeniedModal featureName="AI sequence generation" pricingUrl={PRICING_URL} />;
   }
 
   useEffect(() => {
@@ -125,7 +125,7 @@ export default function Sequences() {
         <div className="page-header__text">
           <h1 className="page-header__title">AI Sequence Generator</h1>
           <p className="page-header__subtitle">
-            Generate intelligent marketing campaigns powered by advanced AI algorithms
+            Generate intelligent email sequences powered by advanced AI algorithms
           </p>
         </div>
       </div>
@@ -165,7 +165,7 @@ export default function Sequences() {
               </span>
               <p className="empty-state__title">No sequences yet</p>
               <p className="empty-state__body">
-                Generate your first AI-powered campaign. The engine analyzes market trends and
+                Generate your first AI-powered sequence. The engine analyzes market trends and
                 builds a strategy in seconds.
               </p>
             </div>

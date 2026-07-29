@@ -1,5 +1,6 @@
 import { User } from '../models/User.js';
-import { onboardCustomer } from './usersService.js';
+import { onboardUser } from './usersService.js';
+import { ConflictError, NotFoundError } from '../httpErrors.js';
 
 function toSafeCustomerList(env) {
   return (env.customers ?? []).map((customer) => ({
@@ -14,10 +15,10 @@ function toSafeCustomerList(env) {
 
 async function listCustomers(clerkId, environmentName) {
   const user = await User.findOne({ clerkId });
-  if (!user) throw new Error('User not found');
+  if (!user) throw new NotFoundError('User not found');
 
   const env = (user.environments ?? new Map()).get(environmentName);
-  if (!env) throw new Error(`Environment "${environmentName}" does not exist`);
+  if (!env) throw new NotFoundError(`Environment "${environmentName}" does not exist`);
 
   return toSafeCustomerList(env);
 }
@@ -30,24 +31,19 @@ async function addCustomer(
   customerId,
   { firstName, lastName, email } = {},
 ) {
-  if (environmentName === 'Default') {
-    throw new Error('Customers cannot be added to the Default environment');
-  }
-  if (!customerId) {
-    throw new Error('customerId is required');
-  }
-
   const existing = await User.findOne({ clerkId });
-  if (!existing) throw new Error('User not found');
+  if (!existing) throw new NotFoundError('User not found');
 
   const env = (existing.environments ?? new Map()).get(environmentName);
-  if (!env) throw new Error(`Environment "${environmentName}" does not exist`);
+  if (!env) throw new NotFoundError(`Environment "${environmentName}" does not exist`);
   if ((env.customers ?? []).some((customer) => customer.customerId === customerId)) {
-    throw new Error(`Customer "${customerId}" already exists in environment "${environmentName}"`);
+    throw new ConflictError(
+      `Customer "${customerId}" already exists in environment "${environmentName}"`,
+    );
   }
 
   const customerName = [firstName, lastName].filter(Boolean).join(' ') || undefined;
-  await onboardCustomer(env.serverApiKey, customerId, { name: customerName, email });
+  await onboardUser(env.serverApiKey, customerId, { name: customerName, email });
 
   const updated = await User.findOneAndUpdate(
     { clerkId },
@@ -70,12 +66,14 @@ async function addCustomer(
 
 async function setActiveCustomer(clerkId, environmentName, customerId) {
   const user = await User.findOne({ clerkId });
-  if (!user) throw new Error('User not found');
+  if (!user) throw new NotFoundError('User not found');
 
   const env = (user.environments ?? new Map()).get(environmentName);
-  if (!env) throw new Error(`Environment "${environmentName}" does not exist`);
+  if (!env) throw new NotFoundError(`Environment "${environmentName}" does not exist`);
   if (!(env.customers ?? []).some((customer) => customer.customerId === customerId)) {
-    throw new Error(`Customer "${customerId}" does not exist in environment "${environmentName}"`);
+    throw new NotFoundError(
+      `Customer "${customerId}" does not exist in environment "${environmentName}"`,
+    );
   }
 
   const updated = await User.findOneAndUpdate(

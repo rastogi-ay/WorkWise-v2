@@ -1,4 +1,5 @@
-import { SEQUENCES_FEATURE_ID, FeatureDeniedError } from '../stigg/constants.js';
+import { SEQUENCES_FEATURE_ID } from '../stigg/constants.js';
+import { FeatureDeniedError } from '../httpErrors.js';
 import { estimateCreditUsage, reportUsage } from '../stigg/stiggClient.js';
 
 async function createSequence(serverApiKey, customerId) {
@@ -8,6 +9,7 @@ async function createSequence(serverApiKey, customerId) {
     SEQUENCES_FEATURE_ID,
     1,
   );
+  // TODO: add soft limits
   if (estimatedUsage.wouldOverdraft) {
     throw new FeatureDeniedError(
       `Customer ${customerId} does not have sufficient credits to generate a sequence`,
