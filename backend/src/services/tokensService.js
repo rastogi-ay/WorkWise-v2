@@ -1,14 +1,13 @@
 import { AI_TOKENS_FEATURE_ID } from '../stigg/constants.js';
 import { FeatureDeniedError } from '../httpErrors.js';
 import { getNumericEntitlement, reportUsage } from '../stigg/stiggClient.js';
-import { generateChatReply } from '../gemini/geminiClient.js';
 
 function randomTokenUsage(usageLimit) {
-  if (!usageLimit || usageLimit <= 0) {
+  if (!usageLimit) {
     return Math.floor(Math.random() * 451) + 50; // no known limit — fall back to a flat 50-500
   }
-  const min = Math.max(1, Math.round(usageLimit * 0.1));
-  const max = Math.max(min + 1, Math.round(usageLimit * 0.25));
+  const min = Math.max(1, Math.round(usageLimit * 0.25));
+  const max = Math.max(min + 1, Math.round(usageLimit * 0.5));
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -20,28 +19,16 @@ async function getTokensUsage(serverApiKey, customerId) {
       entitlement,
     );
   }
-  return entitlement;
+  return { usageLimit: entitlement.usageLimit, currentUsage: entitlement.currentUsage };
 }
 
-async function sendChatMessage(serverApiKey, customerId, history) {
-  const entitlement = await getNumericEntitlement(serverApiKey, customerId, AI_TOKENS_FEATURE_ID);
-  if (!entitlement.isGranted) {
-    throw new FeatureDeniedError(`Customer ${customerId} is out of AI tokens`, entitlement);
-  }
-
-  const reply = await generateChatReply(history);
-  const tokensUsed = randomTokenUsage(entitlement.usageLimit);
-
+// Reports a randomized token spend for one AI interaction. usageLimit only scales the
+// random amount; it is not re-read from Stigg here.
+async function reportTokenUsage(serverApiKey, customerId, usageLimit) {
+  const tokensUsed = randomTokenUsage(usageLimit);
   const usage = await reportUsage(serverApiKey, customerId, AI_TOKENS_FEATURE_ID, tokensUsed);
 
-  return {
-    reply,
-    tokensUsed,
-    // reporting usage can't change the limit, so the pre-report entitlement still holds.
-    // TODO: might change^^
-    usageLimit: entitlement.usageLimit,
-    currentUsage: usage.currentUsage,
-  };
+  return { currentUsage: usage.currentUsage };
 }
 
-export { getTokensUsage, sendChatMessage };
+export { getTokensUsage, reportTokenUsage };

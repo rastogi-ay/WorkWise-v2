@@ -1,15 +1,14 @@
-import type { GetClerkToken } from './clerkAuth';
-import { withAuthHeaders } from './clerkAuth';
+import type { GetClerkToken } from '../clerkAuth';
+import { withAuthHeaders } from '../clerkAuth';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 interface CreateSequencesResponse {
-  usageLimit: number | null;
   currentUsage: number | null;
 }
 
-interface FetchCreditRateResponse {
-  rate: number | null;
+interface FetchSequencesCostResponse {
+  cost: number | null;
 }
 
 export const createSequence = async (getToken: GetClerkToken): Promise<CreateSequencesResponse> => {
@@ -27,11 +26,11 @@ export const createSequence = async (getToken: GetClerkToken): Promise<CreateSeq
   return data;
 };
 
-export const fetchSequencesCreditRate = async (
+export const fetchSequencesCost = async (
   getToken: GetClerkToken,
-): Promise<FetchCreditRateResponse> => {
+): Promise<FetchSequencesCostResponse> => {
   const headers = await withAuthHeaders(getToken);
-  const response = await fetch(`${API_BASE_URL}/api/sequences/rate`, {
+  const response = await fetch(`${API_BASE_URL}/api/sequences/cost`, {
     headers,
   });
   const data = await response.json();

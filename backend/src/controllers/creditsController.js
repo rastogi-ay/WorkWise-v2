@@ -8,15 +8,8 @@ const router = express.Router();
 
 async function fetchCreditBalance(req, res) {
   try {
-    const entitlement = await creditsService.getCreditBalance(
-      req.stiggServerApiKey,
-      req.customerId,
-    );
-    console.log('Credits Entitlement:', entitlement);
-    return res.status(200).json({
-      usageLimit: entitlement.usageLimit,
-      currentUsage: entitlement.currentUsage,
-    });
+    const balance = await creditsService.getCreditBalance(req.stiggServerApiKey, req.customerId);
+    return res.status(200).json(balance);
   } catch (error) {
     return sendHttpError(error, res, 'Failed to get credit balance.');
   }

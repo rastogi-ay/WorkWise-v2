@@ -23,7 +23,7 @@ export async function generateChatReply(history) {
 
   if (!response.ok) {
     const errorBody = await response.text();
-    throw Object.assign(new Error(errorBody), { status: response.status });
+    throw new Error(errorBody);
   }
 
   const data = await response.json();

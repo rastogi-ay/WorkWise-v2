@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useAuth } from '@clerk/react';
 import '../styles/App.css';
-import '../styles/Tokens.css';
-import { fetchTokensUsage, sendChatMessage, type ChatMessage } from '../api/tokensApi';
+import '../styles/Chatbot.css';
+import { sendChatMessage, type ChatMessage } from '../api/chatbotApi';
+import { fetchTokensUsage } from '../api/tokensApi';
 import { ChatIcon } from '../extras/icons';
 import { AccessDeniedModal } from './AccessDeniedModal';
 import { ErrorModal } from './ErrorModal';
@@ -11,10 +12,11 @@ import { useEntitlement, getLoadingAndError, isAccessDenied } from '../stigg/use
 import { PRICING_URL_BY_PRODUCT_ID } from './PaywallPage';
 import { WORKWISE_AI_PRODUCT_ID } from '../stigg/constants';
 import { PageLoading } from '../extras/PageLoading';
+import { UsageMeter } from './UsageMeter';
 
 const PRICING_URL = PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID];
 
-export default function Tokens() {
+export default function Chatbot() {
   const { getToken } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -62,16 +64,21 @@ export default function Tokens() {
     if (!text || isSending) return;
 
     const history = [...messages, { role: 'user' as const, text }];
+    // render the user's message immediately rather than waiting on the reply
+    setMessages(history);
+    setInput('');
     setIsSending(true);
 
     try {
       const data = await sendChatMessage(getToken, history);
       setMessages([...history, { role: 'assistant', text: data.reply }]);
-      setInput('');
-      setUsageLimit(data.usageLimit);
       setCurrentUsage(data.currentUsage);
       setSendDenied(false);
     } catch (error: unknown) {
+      // nothing was spent, so undo the optimistic message and hand the text back
+      setMessages(messages);
+      setInput(text);
+
       if (isAccessDenied(error)) {
         // hit the token limit before this send even reached Gemini — surface the paywall
         setSendDenied(true);
@@ -93,55 +100,42 @@ export default function Tokens() {
 
   if (isLoading) {
     return (
-      <div className="app tokens-page">
+      <div className="app chatbot-page">
         <PageLoading />
       </div>
     );
   }
 
-  const limit = usageLimit ?? 0;
-  const used = currentUsage ?? 0;
-  const percentUsed = limit > 0 ? Math.min(100, Math.max(0, (used / limit) * 100)) : 0;
-
   return (
-    <div className="app tokens-page">
+    <div className="app chatbot-page">
       <div className="page-header">
         <span className="page-header__icon">
           <ChatIcon />
         </span>
         <div className="page-header__text">
           <h1 className="page-header__title">AI Chat</h1>
-          <p className="page-header__subtitle">
-            Chat with us! Get productivity insights on demand.
-          </p>
+          <p className="page-header__subtitle">Chat with us! Get productivity insights on demand.</p>
         </div>
       </div>
 
       <div className="page-content-wrapper">
         <div className={modal ? 'page-content page-content--blurred' : 'page-content'}>
-          <div className="tokens-usage">
-            <span className="tokens-usage__icon">
-              <ChatIcon size={18} />
-            </span>
-            <div className="tokens-usage__text">
-              <span className="tokens-usage__label">AI tokens used</span>
-              <span className="tokens-usage__value">
-                {used} / {limit}
-              </span>
-              <div className="tokens-usage__bar">
-                <div className="tokens-usage__bar-fill" style={{ width: `${percentUsed}%` }} />
-              </div>
-            </div>
+          <div className="chatbot__usage">
+            <UsageMeter
+              label="AI tokens"
+              Icon={ChatIcon}
+              usageLimit={usageLimit}
+              currentUsage={currentUsage}
+            />
           </div>
 
           <div className="chat-panel">
             <div className="chat-message-list">
               {messages.map((message, index) => (
-                  <div key={index} className={`chat-message chat-message--${message.role}`}>
-                    {message.text}
-                  </div>
-                ))
-              }
+                <div key={index} className={`chat-message chat-message--${message.role}`}>
+                  {message.text}
+                </div>
+              ))}
               {isSending && (
                 <div className="chat-message chat-message--assistant chat-message--pending">
                   Thinking…

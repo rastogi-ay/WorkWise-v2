@@ -14,7 +14,7 @@ import '../styles/Sidebar.css';
 
 const NAV_ITEMS = [
   { to: '/analytics', label: 'Analytics', Icon: ChartIcon },
-  { to: '/tokens', label: 'AI Tokens', Icon: ChatIcon },
+  { to: '/chatbot', label: 'Chatbot', Icon: ChatIcon },
   { to: '/sequences', label: 'Sequences', Icon: MailIcon },
 ];
 

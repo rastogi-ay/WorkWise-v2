@@ -3,8 +3,8 @@ import { getCreditEntitlement } from '../stigg/stiggClient.js';
 
 async function getCreditBalance(serverApiKey, customerId) {
   // no FeatureDeniedError here; user will always have ability to view credit balance
-  return getCreditEntitlement(serverApiKey, customerId, CREDIT_CURRENCY);
-  // TODO: add soft limits
+  const entitlement = await getCreditEntitlement(serverApiKey, customerId, CREDIT_CURRENCY);
+  return { usageLimit: entitlement.usageLimit, currentUsage: entitlement.currentUsage };
 }
 
 export { getCreditBalance };

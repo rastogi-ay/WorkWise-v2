@@ -8,8 +8,7 @@ const router = express.Router();
 
 async function fetchAnalytics(req, res) {
   try {
-    const entitlement = await analyticsService.getAnalytics(req.stiggServerApiKey, req.customerId);
-    console.log('Analytics Entitlement:', entitlement);
+    await analyticsService.getAnalytics(req.stiggServerApiKey, req.customerId);
     return res.status(200).json({});
   } catch (error) {
     return sendHttpError(error, res, 'Failed to get analytics.');

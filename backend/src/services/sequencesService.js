@@ -9,7 +9,10 @@ async function createSequence(serverApiKey, customerId) {
     SEQUENCES_FEATURE_ID,
     1,
   );
-  // TODO: add soft limits
+  // TODO: to add soft limits, a few options:
+  // first, preface: soft limits should live in creditsService.js + tokensService.js
+  // since they're directly returning the entitlements (they are responsible)
+  //
   if (estimatedUsage.wouldOverdraft) {
     throw new FeatureDeniedError(
       `Customer ${customerId} does not have sufficient credits to generate a sequence`,
@@ -18,25 +21,25 @@ async function createSequence(serverApiKey, customerId) {
   }
 
   const reportedUsage = await reportUsage(serverApiKey, customerId, SEQUENCES_FEATURE_ID, 1);
-  return reportedUsage;
+  return { currentUsage: reportedUsage.credit.currentUsage };
 }
 
-async function getSequencesCreditRate(serverApiKey, customerId) {
-  // instead of doing an entitlement check on top, this method will not return a "cost" if the user isn't entitled
-  // also, automatically solves for edge case where customer is subscribed to multiple plans w/ same consumption rate
+async function getSequencesCost(serverApiKey, customerId) {
+  // instead of doing an extra entitlement check for sequences, this will not return a "cost" if the user isn't entitled
+  // also, automatically solves for edge case where customer is subscribed to multiple plans w/ same cost
   const estimatedUsage = await estimateCreditUsage(
     serverApiKey,
     customerId,
     SEQUENCES_FEATURE_ID,
     1,
   );
-  const creditRate = estimatedUsage?.breakdown?.[0]?.cost;
-  if (creditRate == null) {
+  const cost = estimatedUsage?.breakdown?.[0]?.cost;
+  if (cost == null) {
     throw new FeatureDeniedError(
-      `Customer ${customerId} does not have a credit rate configured for sequences`,
+      `Customer ${customerId} does not have a cost configured for sequences`,
     );
   }
-  return creditRate;
+  return cost;
 }
 
-export { createSequence, getSequencesCreditRate };
+export { createSequence, getSequencesCost };

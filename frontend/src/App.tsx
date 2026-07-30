@@ -3,7 +3,7 @@ import { StiggProvider } from '@stigg/react-sdk';
 import { SignIn, SignUp, useAuth } from '@clerk/react';
 import Sidebar from './components/Sidebar';
 import Analytics from './components/Analytics';
-import Tokens from './components/Tokens';
+import Chatbot from './components/Chatbot';
 import Sequences from './components/Sequences';
 import CreditsUsage from './components/CreditsUsage';
 import CustomerPortal from './components/CustomerPortal';
@@ -96,7 +96,7 @@ export default function App() {
               <Route path="/stigg-settings" element={<StiggSettings />} />
               <Route element={<StiggGate />}>
                 <Route path="/" element={<Analytics />} />
-                <Route path="/tokens" element={<Tokens />} />
+                <Route path="/chatbot" element={<Chatbot />} />
                 <Route path="/sequences" element={<Sequences />} />
                 <Route path="/customer-portal" element={<CustomerPortal />} />
                 <Route path="/credits" element={<CreditsUsage />} />

@@ -9,31 +9,23 @@ const router = express.Router();
 async function addSequence(req, res) {
   try {
     const usage = await sequencesService.createSequence(req.stiggServerApiKey, req.customerId);
-    console.log('Sequences Usage:', usage);
-    return res.status(201).json({
-      usageLimit: usage.credit.usageLimit,
-      currentUsage: usage.credit.currentUsage,
-    });
+    return res.status(201).json(usage);
   } catch (error) {
     return sendHttpError(error, res, 'Failed to create sequence.');
   }
 }
 
-async function fetchSequencesCreditRate(req, res) {
+async function fetchSequencesCost(req, res) {
   try {
-    const rate = await sequencesService.getSequencesCreditRate(
-      req.stiggServerApiKey,
-      req.customerId,
-    );
-    console.log('Sequences Credit Rate:', rate);
+    const cost = await sequencesService.getSequencesCost(req.stiggServerApiKey, req.customerId);
     return res.status(200).json({
-      rate,
+      cost,
     });
   } catch (error) {
-    return sendHttpError(error, res, 'Failed to get sequence credit rate.');
+    return sendHttpError(error, res, 'Failed to get sequence cost.');
   }
 }
 
 router.post('/', requireAuth, resolveStiggContext, addSequence);
-router.get('/rate', requireAuth, resolveStiggContext, fetchSequencesCreditRate);
+router.get('/cost', requireAuth, resolveStiggContext, fetchSequencesCost);
 export default router;

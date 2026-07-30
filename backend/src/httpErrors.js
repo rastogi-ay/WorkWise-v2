@@ -32,7 +32,7 @@ export class ConflictError extends HttpError {
 }
 
 // Anything that isn't an HttpError is unexpected: log it and report a 500 with
-// fallbackMessage rather than leaking internals to the client.
+// fallbackMessage rather than leaking internals to the client. Used in controllers only.
 export function sendHttpError(error, res, fallbackMessage) {
   if (error instanceof HttpError) {
     console.log(`${error.name} (${error.status}): ${error.message}`, error.details ?? '');

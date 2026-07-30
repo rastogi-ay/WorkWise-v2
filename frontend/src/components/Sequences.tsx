@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useAuth } from '@clerk/react';
 import '../styles/App.css';
 import '../styles/Sequences.css';
-import { createSequence, fetchSequencesCreditRate } from '../api/sequencesApi';
+import { createSequence, fetchSequencesCost } from '../api/sequencesApi';
 import { fetchCreditBalance } from '../api/creditsApi';
 import { MailIcon, LayersIcon } from '../extras/icons';
 import { AccessDeniedModal } from './AccessDeniedModal';
@@ -11,7 +11,7 @@ import { InsufficientBalanceModal } from './InsufficientBalanceModal';
 import { useEntitlement, getLoadingAndError, isAccessDenied } from '../stigg/useEntitlement';
 import { PRICING_URL_BY_PRODUCT_ID } from './PaywallPage';
 import { WORKWISE_AI_PRODUCT_ID } from '../stigg/constants';
-import { CreditBalance } from './CreditBalance';
+import { UsageMeter } from './UsageMeter';
 import { PageLoading } from '../extras/PageLoading';
 
 const PRICING_URL = PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID];
@@ -46,13 +46,13 @@ export default function Sequences() {
   const [createDenied, setCreateDenied] = useState(false);
   const [usageLimit, setUsageLimit] = useState<number | null>(null);
   const [currentUsage, setCurrentUsage] = useState<number | null>(null);
-  const [creditRate, setCreditRate] = useState<number | null>(null);
+  const [cost, setCost] = useState<number | null>(null);
 
   // Generating a sequence requires two independent entitlements:
   // 1. Credits (to render/spend the balance)
-  // 2. Sequences access (to render the rate)
+  // 2. Sequences access (to render the cost)
   const creditBalance = useEntitlement(() => fetchCreditBalance(getToken), [getToken]);
-  const sequenceAccess = useEntitlement(() => fetchSequencesCreditRate(getToken), [getToken]);
+  const sequenceAccess = useEntitlement(() => fetchSequencesCost(getToken), [getToken]);
 
   // Give user flexibility to what they want to do with entitlement statuses
   let modal: ReactNode = null;
@@ -76,14 +76,13 @@ export default function Sequences() {
     if (!creditBalance.data || !sequenceAccess.data) return;
     setUsageLimit(creditBalance.data.usageLimit);
     setCurrentUsage(creditBalance.data.currentUsage);
-    setCreditRate(sequenceAccess.data.rate);
+    setCost(sequenceAccess.data.cost);
   }, [creditBalance.data, sequenceAccess.data]);
 
   async function handleCreateSequence() {
     setIsCreating(true);
     try {
       const data = await createSequence(getToken);
-      setUsageLimit(data.usageLimit);
       setCurrentUsage(data.currentUsage);
       setCreateDenied(false);
       setSequences((prev) => [
@@ -133,24 +132,28 @@ export default function Sequences() {
       <div className="page-content-wrapper">
         <div className={modal ? 'page-content page-content--blurred' : 'page-content'}>
           <div className="generator-panel">
-            <CreditBalance usageLimit={usageLimit} currentUsage={currentUsage} />
+            <UsageMeter
+              label="Platform credits"
+              usageLimit={usageLimit}
+              currentUsage={currentUsage}
+            />
 
             <div className="generator-panel__action">
               <button
                 type="button"
                 className="generate-button"
                 onClick={handleCreateSequence}
-                disabled={isCreating || creditRate === null}
+                disabled={isCreating || cost === null}
               >
                 {isCreating ? 'Generating…' : 'Generate AI Sequence'}
               </button>
-              {creditRate !== null ? (
-                <span className="rate-pill">
-                  {creditRate} {creditRate === 1 ? 'credit' : 'credits'}
+              {cost !== null ? (
+                <span className="cost-pill">
+                  {cost} {cost === 1 ? 'credit' : 'credits'}
                 </span>
               ) : (
                 sequenceAccess.status !== 'loading' && (
-                  <span className="rate-pill rate-pill--error">No rate found</span>
+                  <span className="cost-pill cost-pill--error">No cost found</span>
                 )
               )}
             </div>

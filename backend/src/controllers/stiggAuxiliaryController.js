@@ -14,7 +14,6 @@ async function fetchBillingIntegrationStatus(req, res) {
   try {
     const totalCount = await getIntegrationsCount(req.stiggServerApiKey);
     const billingIntegrationExists = totalCount > 0;
-    console.log('Billing Integration Exists:', billingIntegrationExists);
     return res.status(200).json({ billingIntegrationExists });
   } catch (error) {
     return sendHttpError(error, res, 'Failed to get billing integration status.');
