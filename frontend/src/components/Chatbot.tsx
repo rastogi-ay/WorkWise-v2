@@ -114,7 +114,9 @@ export default function Chatbot() {
         </span>
         <div className="page-header__text">
           <h1 className="page-header__title">AI Chat</h1>
-          <p className="page-header__subtitle">Chat with us! Get productivity insights on demand.</p>
+          <p className="page-header__subtitle">
+            Chat with us! Get productivity insights on demand.
+          </p>
         </div>
       </div>
 

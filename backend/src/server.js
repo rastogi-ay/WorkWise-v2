@@ -12,6 +12,7 @@ import sequencesController from './controllers/sequencesController.js';
 import creditsController from './controllers/creditsController.js';
 import stiggAuxiliaryController from './controllers/stiggAuxiliaryController.js';
 import customersController from './controllers/customersController.js';
+import governanceController from './controllers/governanceController.js';
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use('/api/sequences', sequencesController);
 app.use('/api/credits', creditsController);
 app.use('/api/stigg', stiggAuxiliaryController);
 app.use('/api/customers', customersController);
+app.use('/api/governance', governanceController);
 
 // Start the server, wait for MongoDB to connect
 export async function startServer() {

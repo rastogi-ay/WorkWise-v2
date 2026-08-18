@@ -3,9 +3,10 @@ import { StiggProvider } from '@stigg/react-sdk';
 import { SignIn, SignUp, useAuth } from '@clerk/react';
 import Sidebar from './components/Sidebar';
 import Analytics from './components/Analytics';
-import Chatbot from './components/Chatbot';
 import Sequences from './components/Sequences';
+import Chatbot from './components/Chatbot';
 import CreditsUsage from './components/CreditsUsage';
+import Governance from './components/Governance';
 import CustomerPortal from './components/CustomerPortal';
 import ManageEnvironments from './components/ManageEnvironments';
 import { PaywallPage, PRICING_URL_BY_PRODUCT_ID } from './components/PaywallPage';
@@ -98,6 +99,7 @@ export default function App() {
                 <Route path="/sequences" element={<Sequences />} />
                 <Route path="/customer-portal" element={<CustomerPortal />} />
                 <Route path="/credits" element={<CreditsUsage />} />
+                <Route path="/governance" element={<Governance />} />
                 <Route
                   path={PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID]}
                   element={

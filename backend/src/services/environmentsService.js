@@ -36,6 +36,8 @@ async function addEnvironment(
   name,
   { clientApiKey, serverApiKey, customer: { customerId, name: customerName, email } },
 ) {
+  const normalizedTags = normalizeTags(tags);
+
   const existing = await User.findOne({ clerkId });
   if (!existing) throw new NotFoundError('User not found');
   if ((existing.environments ?? new Map()).has(name)) {

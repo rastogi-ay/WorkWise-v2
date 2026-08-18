@@ -4,7 +4,7 @@ import '../styles/App.css';
 import '../styles/Sequences.css';
 import { createSequence, fetchSequencesCost } from '../api/sequencesApi';
 import { fetchCreditBalance } from '../api/creditsApi';
-import { MailIcon, LayersIcon } from '../extras/icons';
+import { MailIcon } from '../extras/icons';
 import { AccessDeniedModal } from './AccessDeniedModal';
 import { ErrorModal } from './ErrorModal';
 import { InsufficientBalanceModal } from './InsufficientBalanceModal';
@@ -164,7 +164,7 @@ export default function Sequences() {
           {sequences.length === 0 ? (
             <div className="empty-state">
               <span className="empty-state__icon">
-                <LayersIcon size={22} />
+                <MailIcon size={22} />
               </span>
               <p className="empty-state__title">No sequences yet</p>
               <p className="empty-state__body">

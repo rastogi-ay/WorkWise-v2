@@ -6,6 +6,7 @@ import {
   ChatIcon,
   MailIcon,
   CoinIcon,
+  SitemapIcon,
   UserIcon,
   SunIcon,
   MoonIcon,
@@ -14,13 +15,14 @@ import '../styles/Sidebar.css';
 
 const NAV_ITEMS = [
   { to: '/analytics', label: 'Analytics', Icon: ChartIcon },
-  { to: '/chatbot', label: 'Chatbot', Icon: ChatIcon },
   { to: '/sequences', label: 'Sequences', Icon: MailIcon },
+  { to: '/chatbot', label: 'Chatbot', Icon: ChatIcon },
 ];
 
 const SECONDARY_NAV_ITEMS = [
   { to: '/customer-portal', label: 'Customer Portal', Icon: UserIcon },
   { to: '/credits', label: 'Credits', Icon: CoinIcon },
+  { to: '/governance', label: 'Governance', Icon: SitemapIcon },
 ];
 
 function renderNavLink({ to, label, Icon }: (typeof NAV_ITEMS)[number]) {
