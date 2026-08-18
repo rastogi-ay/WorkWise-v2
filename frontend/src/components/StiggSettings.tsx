@@ -302,57 +302,43 @@ export default function StiggSettings() {
                       </div>
                     ))}
 
-                    {selectedEnv.name !== 'Default' && (
-                      <form
-                        className="stigg-settings__customer-form"
-                        onSubmit={(event) => handleAddCustomer(event, selectedEnv.name)}
-                      >
-                        <input
-                          placeholder="Customer ID"
-                          value={customerIdByEnv[selectedEnv.name] ?? ''}
-                          onChange={(event) =>
-                            setCustomerIdByEnv((prev) => ({
-                              ...prev,
-                              [selectedEnv.name]: event.target.value,
-                            }))
-                          }
-                        />
-                        <input
-                          placeholder="First name (optional)"
-                          value={customerProfileByEnv[selectedEnv.name]?.firstName ?? ''}
-                          onChange={(event) =>
-                            updateCustomerProfileField(
-                              selectedEnv.name,
-                              'firstName',
-                              event.target.value,
-                            )
-                          }
-                        />
-                        <input
-                          placeholder="Last name (optional)"
-                          value={customerProfileByEnv[selectedEnv.name]?.lastName ?? ''}
-                          onChange={(event) =>
-                            updateCustomerProfileField(
-                              selectedEnv.name,
-                              'lastName',
-                              event.target.value,
-                            )
-                          }
-                        />
-                        <input
-                          placeholder="Email (optional)"
-                          value={customerProfileByEnv[selectedEnv.name]?.email ?? ''}
-                          onChange={(event) =>
-                            updateCustomerProfileField(
-                              selectedEnv.name,
-                              'email',
-                              event.target.value,
-                            )
-                          }
-                        />
-                        <button type="submit">Add customer</button>
-                      </form>
-                    )}
+                    <form
+                      className="stigg-settings__customer-form"
+                      onSubmit={(event) => handleAddCustomer(event, selectedEnv.name)}
+                    >
+                      <input
+                        placeholder="Customer ID"
+                        value={customerIdByEnv[selectedEnv.name] ?? ''}
+                        onChange={(event) =>
+                          setCustomerIdByEnv((prev) => ({
+                            ...prev,
+                            [selectedEnv.name]: event.target.value,
+                          }))
+                        }
+                      />
+                      <input
+                        placeholder="First name (optional)"
+                        value={customerProfileByEnv[selectedEnv.name]?.firstName ?? ''}
+                        onChange={(event) =>
+                          updateCustomerProfileField(selectedEnv.name, 'firstName', event.target.value)
+                        }
+                      />
+                      <input
+                        placeholder="Last name (optional)"
+                        value={customerProfileByEnv[selectedEnv.name]?.lastName ?? ''}
+                        onChange={(event) =>
+                          updateCustomerProfileField(selectedEnv.name, 'lastName', event.target.value)
+                        }
+                      />
+                      <input
+                        placeholder="Email (optional)"
+                        value={customerProfileByEnv[selectedEnv.name]?.email ?? ''}
+                        onChange={(event) =>
+                          updateCustomerProfileField(selectedEnv.name, 'email', event.target.value)
+                        }
+                      />
+                      <button type="submit">Add customer</button>
+                    </form>
 
                     {customerErrorByEnv[selectedEnv.name] && (
                       <p className="stigg-settings__error">

@@ -25,9 +25,6 @@ async function add(req, res) {
   const { environmentName } = req.params;
   const { customerId, firstName, lastName, email } = req.body;
 
-  if (environmentName === 'Default') {
-    return res.status(400).json({ error: 'Customers cannot be added to the Default environment' });
-  }
   if (!customerId) {
     return res.status(400).json({ error: 'customerId is required' });
   }
