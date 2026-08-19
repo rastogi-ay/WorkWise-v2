@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useAuth } from '@clerk/react';
-import { syncUser, type SyncedUser } from './api/usersApi';
+import { syncUser, type SyncedUser } from './api/account/usersApi';
 
 export interface UserContextValue {
   user: SyncedUser | null;

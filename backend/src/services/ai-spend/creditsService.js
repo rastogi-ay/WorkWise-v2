@@ -1,5 +1,5 @@
-import { CREDIT_CURRENCY } from '../stigg/constants.js';
-import { getCreditEntitlement } from '../stigg/stiggClient.js';
+import { CREDIT_CURRENCY } from '../../stigg/constants.js';
+import { getCreditEntitlement } from '../../stigg/stiggClient.js';
 
 async function getCreditBalance(serverApiKey, customerId) {
   // no FeatureDeniedError here; user will always have ability to view credit balance

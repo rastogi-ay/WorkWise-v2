@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useAuth } from '@clerk/react';
+import { Link } from 'react-router-dom';
 import '../styles/App.css';
 import '../styles/Chatbot.css';
-import { sendChatMessage, type ChatMessage } from '../api/chatbotApi';
-import { fetchTokensUsage } from '../api/tokensApi';
+import { sendChatMessage, type ChatMessage } from '../api/pages/chatbotApi';
+import { fetchTokensUsage } from '../api/ai-spend/tokensApi';
 import { ChatIcon } from '../extras/icons';
 import { AccessDeniedModal } from './AccessDeniedModal';
 import { ErrorModal } from './ErrorModal';
@@ -13,6 +14,7 @@ import { PRICING_URL_BY_PRODUCT_ID } from './PaywallPage';
 import { WORKWISE_AI_PRODUCT_ID } from '../stigg/constants';
 import { PageLoading } from '../extras/PageLoading';
 import { UsageMeter } from './UsageMeter';
+import { useActingAs } from '../stigg/governanceUser';
 
 const PRICING_URL = PRICING_URL_BY_PRODUCT_ID[WORKWISE_AI_PRODUCT_ID];
 
@@ -22,11 +24,15 @@ export default function Chatbot() {
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [dismissedPaywall, setDismissedPaywall] = useState(false);
-  const [sendDenied, setSendDenied] = useState(false);
+  // Any 403 on send lands here, holding the backend's own message. One path for both causes: the
+  // account being out of tokens, and the acting entity's budget (or an ancestor's) being exhausted.
+  // The message distinguishes them in words; nothing branches on it.
+  const [denialMessage, setDenialMessage] = useState<string | null>(null);
   const [usageLimit, setUsageLimit] = useState<number | null>(null);
   const [currentUsage, setCurrentUsage] = useState<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const { actingAsEntityId, dimensions } = useActingAs();
   const tokensAccess = useEntitlement(() => fetchTokensUsage(getToken), [getToken]);
 
   let modal: ReactNode = null;
@@ -34,14 +40,13 @@ export default function Chatbot() {
 
   if (hasError) {
     modal = <ErrorModal featureName="AI chat" />;
-  } else if (sendDenied && !dismissedPaywall) {
+  } else if (denialMessage && !dismissedPaywall) {
     modal = (
       <InsufficientBalanceModal
         featureName="AI chat"
         pricingUrl={PRICING_URL}
-        title="Out of AI Tokens"
-        message="You've used all your AI tokens for this billing period. Upgrade your plan to keep chatting."
-        ctaLabel="Upgrade Plan"
+        title="AI Chat Blocked"
+        message={denialMessage}
         onClose={() => setDismissedPaywall(true)}
       />
     );
@@ -54,6 +59,13 @@ export default function Chatbot() {
     setUsageLimit(tokensAccess.data.usageLimit);
     setCurrentUsage(tokensAccess.data.currentUsage);
   }, [tokensAccess.data]);
+
+  // A denial belongs to the entity that hit it, so switching who we act as has to clear it —
+  // otherwise Bob inherits Alice's block, the exact opposite of the isolation being demonstrated.
+  useEffect(() => {
+    setDenialMessage(null);
+    setDismissedPaywall(false);
+  }, [actingAsEntityId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -70,18 +82,19 @@ export default function Chatbot() {
     setIsSending(true);
 
     try {
-      const data = await sendChatMessage(getToken, history);
+      const data = await sendChatMessage(getToken, history, dimensions);
       setMessages([...history, { role: 'assistant', text: data.reply }]);
       setCurrentUsage(data.currentUsage);
-      setSendDenied(false);
+      setDenialMessage(null);
     } catch (error: unknown) {
       // nothing was spent, so undo the optimistic message and hand the text back
       setMessages(messages);
       setInput(text);
 
       if (isAccessDenied(error)) {
-        // hit the token limit before this send even reached Gemini — surface the paywall
-        setSendDenied(true);
+        // blocked before this send reached Gemini, either by the account balance or by a governed
+        // budget — the backend's message says which
+        setDenialMessage(error instanceof Error ? error.message : 'AI chat is unavailable.');
         setDismissedPaywall(false);
       } else {
         console.error('Failed to send chat message:', error);
@@ -129,6 +142,21 @@ export default function Chatbot() {
               usageLimit={usageLimit}
               currentUsage={currentUsage}
             />
+
+            {/* Which governed entity this chat spends against. Without it an unexpected block is
+                impossible to explain, and per-user isolation is invisible. */}
+            <p className="chatbot__acting-as">
+              {actingAsEntityId ? (
+                <>
+                  Spending as <strong>{actingAsEntityId}</strong> ·{' '}
+                  <Link to="/governance">switch user</Link>
+                </>
+              ) : (
+                <>
+                  Ungoverned — <Link to="/governance">pick a user</Link> to spend against a budget
+                </>
+              )}
+            </p>
           </div>
 
           <div className="chat-panel">

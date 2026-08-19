@@ -3,16 +3,16 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { clerkMiddleware } from '@clerk/express';
-import analyticsController from './controllers/analyticsController.js';
-import usersController from './controllers/usersController.js';
-import environmentsController from './controllers/environmentsController.js';
-import tokensController from './controllers/tokensController.js';
-import chatbotController from './controllers/chatbotController.js';
-import sequencesController from './controllers/sequencesController.js';
-import creditsController from './controllers/creditsController.js';
+import analyticsController from './controllers/pages/analyticsController.js';
+import usersController from './controllers/account/usersController.js';
+import environmentsController from './controllers/account/environmentsController.js';
+import tokensController from './controllers/ai-spend/tokensController.js';
+import chatbotController from './controllers/pages/chatbotController.js';
+import sequencesController from './controllers/pages/sequencesController.js';
+import creditsController from './controllers/ai-spend/creditsController.js';
 import stiggAuxiliaryController from './controllers/stiggAuxiliaryController.js';
-import customersController from './controllers/customersController.js';
-import governanceController from './controllers/governanceController.js';
+import customersController from './controllers/account/customersController.js';
+import governanceController from './controllers/ai-spend/governanceController.js';
 
 dotenv.config();
 

@@ -1,13 +1,17 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '@clerk/react';
 import { useSyncedUser } from '../UserContext';
-import { addEnvironment, removeEnvironment, setActiveEnvironment } from '../api/environmentsApi';
+import {
+  addEnvironment,
+  removeEnvironment,
+  setActiveEnvironment,
+} from '../api/account/environmentsApi';
 import {
   addCustomer,
   updateCustomer,
   archiveCustomer,
   setActiveCustomer,
-} from '../api/customersApi';
+} from '../api/account/customersApi';
 import { LayersIcon, UserIcon } from '../extras/icons';
 import '../styles/App.css';
 import '../styles/AccessDeniedModal.css';

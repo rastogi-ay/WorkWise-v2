@@ -1,8 +1,8 @@
 import express from 'express';
-import * as creditsService from '../services/creditsService.js';
-import { requireAuth } from '../middleware/requireAuth.js';
-import { resolveStiggContext } from '../middleware/resolveStiggContext.js';
-import { sendHttpError } from '../httpErrors.js';
+import * as creditsService from '../../services/ai-spend/creditsService.js';
+import { requireAuth } from '../../middleware/requireAuth.js';
+import { resolveStiggContext } from '../../middleware/resolveStiggContext.js';
+import { sendHttpError } from '../../httpErrors.js';
 
 const router = express.Router();
 

@@ -1,8 +1,8 @@
 import express from 'express';
-import * as analyticsService from '../services/analyticsService.js';
-import { sendHttpError } from '../httpErrors.js';
-import { requireAuth } from '../middleware/requireAuth.js';
-import { resolveStiggContext } from '../middleware/resolveStiggContext.js';
+import * as analyticsService from '../../services/pages/analyticsService.js';
+import { sendHttpError } from '../../httpErrors.js';
+import { requireAuth } from '../../middleware/requireAuth.js';
+import { resolveStiggContext } from '../../middleware/resolveStiggContext.js';
 
 const router = express.Router();
 

@@ -1,13 +1,13 @@
 import express from 'express';
-import * as chatbotService from '../services/chatbotService.js';
-import { sendHttpError } from '../httpErrors.js';
-import { requireAuth } from '../middleware/requireAuth.js';
-import { resolveStiggContext } from '../middleware/resolveStiggContext.js';
+import * as chatbotService from '../../services/pages/chatbotService.js';
+import { sendHttpError } from '../../httpErrors.js';
+import { requireAuth } from '../../middleware/requireAuth.js';
+import { resolveStiggContext } from '../../middleware/resolveStiggContext.js';
 
 const router = express.Router();
 
 async function sendChatMessage(req, res) {
-  const { history } = req.body;
+  const { history, dimensions } = req.body;
   const lastMessage = history?.at(-1);
 
   if (!lastMessage?.text?.trim()) {
@@ -19,6 +19,7 @@ async function sendChatMessage(req, res) {
       req.stiggServerApiKey,
       req.customerId,
       history,
+      dimensions,
     );
     return res.status(200).json(result);
   } catch (error) {

@@ -1,7 +1,7 @@
 import express from 'express';
-import * as environmentsService from '../services/environmentsService.js';
-import { requireAuth } from '../middleware/requireAuth.js';
-import { sendHttpError } from '../httpErrors.js';
+import * as environmentsService from '../../services/account/environmentsService.js';
+import { requireAuth } from '../../middleware/requireAuth.js';
+import { sendHttpError } from '../../httpErrors.js';
 
 const router = express.Router();
 

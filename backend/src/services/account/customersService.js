@@ -1,7 +1,7 @@
-import { User } from '../models/User.js';
-import * as stiggClient from '../stigg/stiggClient.js';
-import { WORKWISE_AI_FREE_PLAN_ID } from '../stigg/constants.js';
-import { BadRequestError, ConflictError, NotFoundError } from '../httpErrors.js';
+import { User } from '../../models/User.js';
+import * as stiggClient from '../../stigg/stiggClient.js';
+import { WORKWISE_AI_FREE_PLAN_ID } from '../../stigg/constants.js';
+import { BadRequestError, ConflictError, NotFoundError } from '../../httpErrors.js';
 
 async function getUserAndEnv(clerkId, environmentName) {
   const user = await User.findOne({ clerkId });

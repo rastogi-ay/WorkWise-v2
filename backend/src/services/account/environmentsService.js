@@ -1,6 +1,6 @@
-import { User } from '../models/User.js';
+import { User } from '../../models/User.js';
 import { getLiveCustomers, onboardCustomer } from './customersService.js';
-import { BadRequestError, ConflictError, NotFoundError } from '../httpErrors.js';
+import { BadRequestError, ConflictError, NotFoundError } from '../../httpErrors.js';
 
 // One environment's Stigg call failing (bad/revoked key, Stigg being down) shouldn't take out
 // the whole list — each environment gets its own try/catch so the rest still come back normally.

@@ -1,5 +1,5 @@
 import { clerkClient } from '@clerk/express';
-import { User } from '../models/User.js';
+import { User } from '../../models/User.js';
 import { onboardCustomer } from './customersService.js';
 
 async function syncUser(clerkId) {

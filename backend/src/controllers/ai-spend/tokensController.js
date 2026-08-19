@@ -1,8 +1,8 @@
 import express from 'express';
-import * as tokensService from '../services/tokensService.js';
-import { sendHttpError } from '../httpErrors.js';
-import { requireAuth } from '../middleware/requireAuth.js';
-import { resolveStiggContext } from '../middleware/resolveStiggContext.js';
+import * as tokensService from '../../services/ai-spend/tokensService.js';
+import { sendHttpError } from '../../httpErrors.js';
+import { requireAuth } from '../../middleware/requireAuth.js';
+import { resolveStiggContext } from '../../middleware/resolveStiggContext.js';
 
 const router = express.Router();
 

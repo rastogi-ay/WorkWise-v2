@@ -1,6 +1,6 @@
-import { SEQUENCES_FEATURE_ID } from '../stigg/constants.js';
-import { FeatureDeniedError } from '../httpErrors.js';
-import { estimateCreditUsage, reportUsage } from '../stigg/stiggClient.js';
+import { SEQUENCES_FEATURE_ID } from '../../stigg/constants.js';
+import { FeatureDeniedError } from '../../httpErrors.js';
+import { estimateCreditUsage, reportUsage } from '../../stigg/stiggClient.js';
 
 async function createSequence(serverApiKey, customerId) {
   const estimatedUsage = await estimateCreditUsage(

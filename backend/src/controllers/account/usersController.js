@@ -1,8 +1,8 @@
 import express from 'express';
-import { syncUser } from '../services/usersService.js';
-import { toSafeEnvironmentList } from '../services/environmentsService.js';
-import { requireAuth } from '../middleware/requireAuth.js';
-import { sendHttpError } from '../httpErrors.js';
+import { syncUser } from '../../services/account/usersService.js';
+import { toSafeEnvironmentList } from '../../services/account/environmentsService.js';
+import { requireAuth } from '../../middleware/requireAuth.js';
+import { sendHttpError } from '../../httpErrors.js';
 
 const router = express.Router();
 

@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useAuth } from '@clerk/react';
 import '../styles/App.css';
 import '../styles/Analytics.css';
-import { fetchAnalytics } from '../api/analyticsApi';
+import { fetchAnalytics } from '../api/pages/analyticsApi';
 import { ClockIcon } from '../extras/icons';
 import {
   STATS,

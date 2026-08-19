@@ -1,8 +1,8 @@
 import express from 'express';
-import * as sequencesService from '../services/sequencesService.js';
-import { sendHttpError } from '../httpErrors.js';
-import { requireAuth } from '../middleware/requireAuth.js';
-import { resolveStiggContext } from '../middleware/resolveStiggContext.js';
+import * as sequencesService from '../../services/pages/sequencesService.js';
+import { sendHttpError } from '../../httpErrors.js';
+import { requireAuth } from '../../middleware/requireAuth.js';
+import { resolveStiggContext } from '../../middleware/resolveStiggContext.js';
 
 const router = express.Router();
 

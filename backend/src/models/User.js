@@ -29,6 +29,20 @@ const userSchema = new Schema(
   { timestamps: true },
 );
 
+// The single projection of a stored customer into the shape the frontend sees. Lives here rather
+// than in a service because the services already import this model — the reverse would be a cycle.
+// Every path that returns customers goes through this, so a new field is added in one place.
+export function toSafeCustomer(customer, activeCustomerId) {
+  return {
+    customerId: customer.customerId,
+    firstName: customer.firstName,
+    lastName: customer.lastName,
+    email: customer.email,
+    isActive: customer.customerId === activeCustomerId,
+    stiggOnboarded: customer.stiggOnboarded,
+  };
+}
+
 // ensures that the Server API key never reaches the frontend (i.e. when res.json() is run)
 userSchema.set('toJSON', {
   transform(doc, ret) {
