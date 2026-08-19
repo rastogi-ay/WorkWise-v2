@@ -27,7 +27,6 @@ async function add(req, res) {
       customerId,
       name,
       email,
-      tags,
     });
     return res.status(201).json({ customers });
   } catch (error) {
