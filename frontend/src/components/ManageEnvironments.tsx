@@ -372,7 +372,8 @@ export default function ManageEnvironments() {
 
                   <div className="manage-environments__customers">
                     <p className="manage-environments__customers-label">
-                      Customers{selectedEnv.customers.length > 0 && ` (${selectedEnv.customers.length})`}
+                      Customers
+                      {selectedEnv.customers.length > 0 && ` (${selectedEnv.customers.length})`}
                     </p>
                     {selectedEnv.customers.length === 0 && (
                       <p className="manage-environments__empty">No customers yet.</p>
@@ -408,7 +409,10 @@ export default function ManageEnvironments() {
                           </button>
                         </form>
                       ) : (
-                        <div key={customer.customerId} className="manage-environments__customer-row">
+                        <div
+                          key={customer.customerId}
+                          className="manage-environments__customer-row"
+                        >
                           <div className="manage-environments__customer-info">
                             <span className="manage-environments__customer-avatar">
                               <UserIcon size={15} />
