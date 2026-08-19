@@ -60,8 +60,8 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar__footer">
-        <NavLink to="/stigg-settings" className="sidebar__theme-toggle">
-          Stigg Settings
+        <NavLink to="/manage-environments" className="sidebar__theme-toggle">
+          Manage Environments
         </NavLink>
         <button
           type="button"

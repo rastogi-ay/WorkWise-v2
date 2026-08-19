@@ -1,76 +1,85 @@
 import { User } from '../models/User.js';
-import { onboardUser } from './usersService.js';
-import { ConflictError, NotFoundError } from '../httpErrors.js';
+import * as stiggClient from '../stigg/stiggClient.js';
+import { WORKWISE_AI_FREE_PLAN_ID } from '../stigg/constants.js';
+import { BadRequestError, ConflictError, NotFoundError } from '../httpErrors.js';
 
-function toSafeCustomerList(env) {
-  return (env.customers ?? []).map((customer) => ({
-    customerId: customer.customerId,
-    firstName: customer.firstName,
-    lastName: customer.lastName,
-    email: customer.email,
-    isActive: customer.customerId === env.activeCustomerId,
-    stiggOnboarded: customer.stiggOnboarded,
-  }));
+async function getUserAndEnv(clerkId, environmentName) {
+  const user = await User.findOne({ clerkId });
+  if (!user) throw new NotFoundError('User not found');
+
+  const env = (user.environments ?? new Map()).get(environmentName);
+  if (!env) throw new NotFoundError(`Environment "${environmentName}" does not exist`);
+
+  return { user, env };
+}
+
+async function getLiveCustomers(env) {
+  const stiggCustomers = await stiggClient.listCustomers(env.serverApiKey);
+  return stiggCustomers
+    .filter((customer) => !customer.archivedAt)
+    .map((customer) => ({
+      customerId: customer.id,
+      name: customer.name ?? null,
+      email: customer.email ?? null,
+      isActive: customer.id === env.activeCustomerId,
+    }));
+}
+
+// For 409, there are two different ways to handle it:
+// 1) 'swallow' (default) - treats that as fine and moves on (usually for React Strict Mode)
+// 2) 'throw' - raises a real error, means the user really is trying to add a duplicate
+async function onboardCustomer(
+  serverApiKey,
+  customerId,
+  { name, email } = {},
+  { onConflict = 'swallow' } = {},
+) {
+  let customer;
+  try {
+    customer = await stiggClient.createCustomer(serverApiKey, customerId, { name, email });
+  } catch (error) {
+    if (error.status !== 409) throw error;
+    if (onConflict === 'throw') {
+      throw new ConflictError(`Customer "${customerId}" already exists`);
+    }
+    customer = { id: customerId, name, email };
+  }
+
+  await stiggClient.createSubscription(serverApiKey, customer.id, WORKWISE_AI_FREE_PLAN_ID);
+  return customer;
 }
 
 async function listCustomers(clerkId, environmentName) {
-  const user = await User.findOne({ clerkId });
-  if (!user) throw new NotFoundError('User not found');
-
-  const env = (user.environments ?? new Map()).get(environmentName);
-  if (!env) throw new NotFoundError(`Environment "${environmentName}" does not exist`);
-
-  return toSafeCustomerList(env);
+  const { env } = await getUserAndEnv(clerkId, environmentName);
+  return getLiveCustomers(env);
 }
 
-// Adding a customer is synchronous/blocking, same as the first customer created alongside its
-// environment — if Stigg's calls hard-fail, nothing is persisted and the user just retries.
-async function addCustomer(
-  clerkId,
-  environmentName,
-  customerId,
-  { firstName, lastName, email } = {},
-) {
-  const existing = await User.findOne({ clerkId });
-  if (!existing) throw new NotFoundError('User not found');
+async function addCustomer(clerkId, environmentName, { customerId, name, email }) {
+  const { env } = await getUserAndEnv(clerkId, environmentName);
+  await onboardCustomer(env.serverApiKey, customerId, { name, email }, { onConflict: 'throw' });
+  return getLiveCustomers(env);
+}
 
-  const env = (existing.environments ?? new Map()).get(environmentName);
-  if (!env) throw new NotFoundError(`Environment "${environmentName}" does not exist`);
-  if ((env.customers ?? []).some((customer) => customer.customerId === customerId)) {
-    throw new ConflictError(
-      `Customer "${customerId}" already exists in environment "${environmentName}"`,
-    );
+async function updateCustomer(clerkId, environmentName, customerId, { name, email } = {}) {
+  const { env } = await getUserAndEnv(clerkId, environmentName);
+  await stiggClient.updateCustomer(env.serverApiKey, customerId, { name, email });
+  return getLiveCustomers(env);
+}
+
+async function archiveCustomer(clerkId, environmentName, customerId) {
+  const { env } = await getUserAndEnv(clerkId, environmentName);
+  if (env.activeCustomerId === customerId) {
+    throw new BadRequestError('The active customer cannot be archived');
   }
 
-  const customerName = [firstName, lastName].filter(Boolean).join(' ') || undefined;
-  await onboardUser(env.serverApiKey, customerId, { name: customerName, email });
-
-  const updated = await User.findOneAndUpdate(
-    { clerkId },
-    {
-      $push: {
-        [`environments.${environmentName}.customers`]: {
-          customerId,
-          firstName: firstName || null,
-          lastName: lastName || null,
-          email: email || null,
-          stiggOnboarded: true,
-          createdAt: new Date(),
-        },
-      },
-    },
-    { returnDocument: 'after' },
-  );
-  return toSafeCustomerList(updated.environments.get(environmentName));
+  await stiggClient.archiveCustomer(env.serverApiKey, customerId);
+  return getLiveCustomers(env);
 }
 
 async function setActiveCustomer(clerkId, environmentName, customerId) {
-  const user = await User.findOne({ clerkId });
-  if (!user) throw new NotFoundError('User not found');
-
-  const env = (user.environments ?? new Map()).get(environmentName);
-  if (!env) throw new NotFoundError(`Environment "${environmentName}" does not exist`);
-  if (!(env.customers ?? []).some((customer) => customer.customerId === customerId)) {
+  const { env } = await getUserAndEnv(clerkId, environmentName);
+  const liveCustomers = await getLiveCustomers(env);
+  if (!liveCustomers.some((customer) => customer.customerId === customerId)) {
     throw new NotFoundError(
       `Customer "${customerId}" does not exist in environment "${environmentName}"`,
     );
@@ -81,7 +90,15 @@ async function setActiveCustomer(clerkId, environmentName, customerId) {
     { $set: { [`environments.${environmentName}.activeCustomerId`]: customerId } },
     { returnDocument: 'after' },
   );
-  return toSafeCustomerList(updated.environments.get(environmentName));
+  return getLiveCustomers(updated.environments.get(environmentName));
 }
 
-export { listCustomers, addCustomer, setActiveCustomer };
+export {
+  getLiveCustomers,
+  onboardCustomer,
+  listCustomers,
+  addCustomer,
+  updateCustomer,
+  archiveCustomer,
+  setActiveCustomer,
+};

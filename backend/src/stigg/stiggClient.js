@@ -1,3 +1,5 @@
+import { UpstreamError } from '../httpErrors.js';
+
 export const STIGG_BASE_URL = 'https://api.stigg.io/api/v1';
 export const STIGG_GRAPHQL_URL = 'https://api.stigg.io/graphql';
 
@@ -16,7 +18,7 @@ export async function createCustomer(serverApiKey, customerId, { name, email } =
   });
   if (!response.ok) {
     const errorBody = await response.text();
-    throw Object.assign(new Error(errorBody), { status: response.status });
+    throw new UpstreamError(response.status, errorBody);
   }
   const { data } = await response.json();
   return data;
@@ -36,7 +38,62 @@ export async function createSubscription(serverApiKey, customerId, planId) {
   });
   if (!response.ok) {
     const errorBody = await response.text();
-    throw Object.assign(new Error(errorBody), { status: response.status });
+    throw new UpstreamError(response.status, errorBody);
+  }
+  const { data } = await response.json();
+  return data;
+}
+
+export async function listCustomers(serverApiKey) {
+  const url = new URL(`${STIGG_BASE_URL}/customers`);
+  url.searchParams.set('limit', 100);
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'X-API-KEY': serverApiKey,
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new UpstreamError(response.status, errorBody);
+  }
+  const { data } = await response.json();
+  return data;
+}
+
+export async function updateCustomer(serverApiKey, customerId, { name, email } = {}) {
+  const response = await fetch(`${STIGG_BASE_URL}/customers/${customerId}`, {
+    method: 'PATCH',
+    headers: {
+      'X-API-KEY': serverApiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      ...(name !== undefined ? { name } : {}),
+      ...(email !== undefined ? { email } : {}),
+    }),
+  });
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new UpstreamError(response.status, errorBody);
+  }
+  const { data } = await response.json();
+  return data;
+}
+
+export async function archiveCustomer(serverApiKey, customerId) {
+  const response = await fetch(`${STIGG_BASE_URL}/customers/${customerId}/archive`, {
+    method: 'POST',
+    headers: {
+      'X-API-KEY': serverApiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({}),
+  });
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new UpstreamError(response.status, errorBody);
   }
   const { data } = await response.json();
   return data;
@@ -54,7 +111,7 @@ export async function getSubscriptions(serverApiKey, customerId) {
   });
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(errorBody);
+    throw new UpstreamError(response.status, errorBody);
   }
   const { data } = await response.json();
   return data;
@@ -71,7 +128,7 @@ export async function getBooleanEntitlement(serverApiKey, customerId, featureId)
   });
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(errorBody);
+    throw new UpstreamError(response.status, errorBody);
   }
   const { data } = await response.json();
   return data;
@@ -91,7 +148,7 @@ export async function getNumericEntitlement(serverApiKey, customerId, featureId,
   });
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(errorBody);
+    throw new UpstreamError(response.status, errorBody);
   }
   const { data } = await response.json();
   return data;
@@ -109,7 +166,7 @@ export async function getCreditEntitlement(serverApiKey, customerId, currencyId)
 
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(errorBody);
+    throw new UpstreamError(response.status, errorBody);
   }
   const { data } = await response.json();
   return data;
@@ -131,7 +188,7 @@ export async function estimateCreditUsage(serverApiKey, customerId, featureId, v
 
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(errorBody);
+    throw new UpstreamError(response.status, errorBody);
   }
   const { data } = await response.json();
   return data.estimates[0];
@@ -150,7 +207,7 @@ export async function reportUsage(serverApiKey, customerId, featureId, value) {
   });
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(errorBody);
+    throw new UpstreamError(response.status, errorBody);
   }
   const { data } = await response.json();
   return data[0];
@@ -177,7 +234,7 @@ export async function getIntegrationsCount(serverApiKey) {
 
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(errorBody);
+    throw new UpstreamError(response.status, errorBody);
   }
   const { data, errors } = await response.json();
   if (errors) {

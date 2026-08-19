@@ -1,8 +1,16 @@
 import type { GetClerkToken } from '../clerkAuth';
 import { withAuthHeaders } from '../clerkAuth';
-import type { SyncedEnvironment, CustomerProfileInput } from './usersApi';
+import type { SyncedCustomer, CustomerProfileInput } from './customersApi';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+export interface SyncedEnvironment {
+  name: string;
+  clientApiKey: string;
+  isActive: boolean;
+  activeCustomerId: string;
+  customers: SyncedCustomer[];
+}
 
 interface EnvironmentsResponse {
   environments: SyncedEnvironment[];
@@ -25,8 +33,7 @@ export const addEnvironment = async (
   name: string,
   clientApiKey: string,
   serverApiKey: string,
-  customerId: string,
-  customerProfile: CustomerProfileInput = {},
+  customerProfile: CustomerProfileInput,
 ): Promise<EnvironmentsResponse> => {
   const headers = await withAuthHeaders(getToken, {
     'Content-Type': 'application/json',
@@ -34,7 +41,7 @@ export const addEnvironment = async (
   const response = await fetch(`${API_BASE_URL}/api/environments`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ name, clientApiKey, serverApiKey, customerId, ...customerProfile }),
+    body: JSON.stringify({ name, clientApiKey, serverApiKey, customer: customerProfile }),
   });
   const data = await response.json();
 

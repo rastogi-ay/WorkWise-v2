@@ -1,23 +1,27 @@
 import { User } from '../models/User.js';
-import { onboardUser } from './usersService.js';
+import { getLiveCustomers, onboardCustomer } from './customersService.js';
 import { BadRequestError, ConflictError, NotFoundError } from '../httpErrors.js';
 
-function toSafeEnvironmentList(user) {
+// One environment's Stigg call failing (bad/revoked key, Stigg being down) shouldn't take out
+// the whole list — each environment gets its own try/catch so the rest still come back normally.
+async function toSafeEnvironmentList(user) {
   const environments = user.environments ?? new Map();
-  return Array.from(environments.entries()).map(([name, env]) => ({
-    name,
-    clientApiKey: env.clientApiKey,
-    isActive: name === user.activeEnvironment,
-    activeCustomerId: env.activeCustomerId,
-    customers: (env.customers ?? []).map((customer) => ({
-      customerId: customer.customerId,
-      firstName: customer.firstName,
-      lastName: customer.lastName,
-      email: customer.email,
-      isActive: customer.customerId === env.activeCustomerId,
-      stiggOnboarded: customer.stiggOnboarded,
-    })),
-  }));
+  return Promise.all(
+    Array.from(environments.entries()).map(async ([name, env]) => {
+      const base = {
+        name,
+        clientApiKey: env.clientApiKey,
+        isActive: name === user.activeEnvironment,
+        activeCustomerId: env.activeCustomerId,
+      };
+      try {
+        return { ...base, customers: await getLiveCustomers(env) };
+      } catch (error) {
+        console.error(`Failed to load live customers for environment "${name}":`, error);
+        return { ...base, customers: [], customersError: true };
+      }
+    }),
+  );
 }
 
 async function listEnvironments(clerkId) {
@@ -30,7 +34,7 @@ async function listEnvironments(clerkId) {
 async function addEnvironment(
   clerkId,
   name,
-  { clientApiKey, serverApiKey, customerId, firstName, lastName, email },
+  { clientApiKey, serverApiKey, customer: { customerId, name: customerName, email } },
 ) {
   const existing = await User.findOne({ clerkId });
   if (!existing) throw new NotFoundError('User not found');
@@ -38,8 +42,7 @@ async function addEnvironment(
     throw new ConflictError(`Environment "${name}" already exists`);
   }
 
-  const customerName = [firstName, lastName].filter(Boolean).join(' ') || undefined;
-  await onboardUser(serverApiKey, customerId, { name: customerName, email });
+  await onboardCustomer(serverApiKey, customerId, { name: customerName, email });
 
   const user = await User.findOneAndUpdate(
     { clerkId },
@@ -49,16 +52,6 @@ async function addEnvironment(
           clientApiKey,
           serverApiKey,
           activeCustomerId: customerId,
-          customers: [
-            {
-              customerId,
-              firstName: firstName || null,
-              lastName: lastName || null,
-              email: email || null,
-              stiggOnboarded: true,
-              createdAt: new Date(),
-            },
-          ],
         },
       },
     },

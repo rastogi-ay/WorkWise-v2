@@ -7,7 +7,7 @@ import Chatbot from './components/Chatbot';
 import Sequences from './components/Sequences';
 import CreditsUsage from './components/CreditsUsage';
 import CustomerPortal from './components/CustomerPortal';
-import StiggSettings from './components/StiggSettings';
+import ManageEnvironments from './components/ManageEnvironments';
 import { PaywallPage, PRICING_URL_BY_PRODUCT_ID } from './components/PaywallPage';
 import { WORKWISE_AI_PRODUCT_ID, WORKWISE_PLANNER_PRODUCT_ID } from './stigg/constants';
 import { UserProvider, useSyncedUser } from './UserContext';
@@ -30,8 +30,6 @@ function ProtectedLayout() {
   );
 }
 
-// Sidebar + layout only — no Stigg-specific logic, so pages like /stigg-settings (which is how a
-// user would fix a missing/invalid Stigg context in the first place) are always reachable here.
 function AppShell() {
   const { isLoading } = useSyncedUser();
 
@@ -93,7 +91,7 @@ export default function App() {
           />
           <Route element={<ProtectedLayout />}>
             <Route element={<AppShell />}>
-              <Route path="/stigg-settings" element={<StiggSettings />} />
+              <Route path="/manage-environments" element={<ManageEnvironments />} />
               <Route element={<StiggGate />}>
                 <Route path="/" element={<Analytics />} />
                 <Route path="/chatbot" element={<Chatbot />} />

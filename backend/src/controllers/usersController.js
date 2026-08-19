@@ -14,7 +14,7 @@ async function sync(req, res) {
 
     return res.status(200).json({
       ...user.toJSON(),
-      environments: toSafeEnvironmentList(user),
+      environments: await toSafeEnvironmentList(user),
       activeEnvironment: user.activeEnvironment,
     });
   } catch (error) {

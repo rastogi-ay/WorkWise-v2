@@ -2,11 +2,16 @@ import { useState, type FormEvent } from 'react';
 import { useAuth } from '@clerk/react';
 import { useSyncedUser } from '../UserContext';
 import { addEnvironment, removeEnvironment, setActiveEnvironment } from '../api/environmentsApi';
-import { addCustomer, setActiveCustomer } from '../api/customersApi';
-import { LayersIcon } from '../extras/icons';
+import {
+  addCustomer,
+  updateCustomer,
+  archiveCustomer,
+  setActiveCustomer,
+} from '../api/customersApi';
+import { LayersIcon, UserIcon } from '../extras/icons';
 import '../styles/App.css';
 import '../styles/AccessDeniedModal.css';
-import '../styles/StiggSettings.css';
+import '../styles/ManageEnvironments.css';
 
 interface PendingEnvironment {
   name: string;
@@ -14,7 +19,19 @@ interface PendingEnvironment {
   serverApiKey: string;
 }
 
-export default function StiggSettings() {
+interface EditingCustomer {
+  environmentName: string;
+  customerId: string;
+  name: string;
+  email: string;
+}
+
+interface ArchivePendingCustomer {
+  environmentName: string;
+  customerId: string;
+}
+
+export default function ManageEnvironments() {
   const { getToken } = useAuth();
   const { user, refetch } = useSyncedUser();
 
@@ -46,24 +63,28 @@ export default function StiggSettings() {
 
   const [pendingEnvironment, setPendingEnvironment] = useState<PendingEnvironment | null>(null);
   const [pendingCustomerId, setPendingCustomerId] = useState('');
-  const [pendingFirstName, setPendingFirstName] = useState('');
-  const [pendingLastName, setPendingLastName] = useState('');
+  const [pendingName, setPendingName] = useState('');
   const [pendingEmail, setPendingEmail] = useState('');
   const [isCreatingEnvironment, setIsCreatingEnvironment] = useState(false);
 
   const [customerIdByEnv, setCustomerIdByEnv] = useState<Record<string, string>>({});
   const [customerProfileByEnv, setCustomerProfileByEnv] = useState<
-    Record<string, { firstName: string; lastName: string; email: string }>
+    Record<string, { name: string; email: string }>
   >({});
   const [customerErrorByEnv, setCustomerErrorByEnv] = useState<Record<string, string | null>>({});
 
+  const [editingCustomer, setEditingCustomer] = useState<EditingCustomer | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [archivePending, setArchivePending] = useState<ArchivePendingCustomer | null>(null);
+  const [isArchiving, setIsArchiving] = useState(false);
+
   function updateCustomerProfileField(
     environmentName: string,
-    field: 'firstName' | 'lastName' | 'email',
+    field: 'name' | 'email',
     value: string,
   ) {
     setCustomerProfileByEnv((prev) => {
-      const existing = prev[environmentName] ?? { firstName: '', lastName: '', email: '' };
+      const existing = prev[environmentName] ?? { name: '', email: '' };
       return { ...prev, [environmentName]: { ...existing, [field]: value } };
     });
   }
@@ -102,10 +123,9 @@ export default function StiggSettings() {
         pendingEnvironment.name,
         pendingEnvironment.clientApiKey,
         pendingEnvironment.serverApiKey,
-        pendingCustomerId,
         {
-          firstName: pendingFirstName.trim() || undefined,
-          lastName: pendingLastName.trim() || undefined,
+          customerId: pendingCustomerId,
+          name: pendingName.trim() || undefined,
           email: pendingEmail.trim() || undefined,
         },
       );
@@ -115,8 +135,7 @@ export default function StiggSettings() {
       setServerApiKey('');
       setPendingEnvironment(null);
       setPendingCustomerId('');
-      setPendingFirstName('');
-      setPendingLastName('');
+      setPendingName('');
       setPendingEmail('');
       refetch();
     } catch (err) {
@@ -129,8 +148,7 @@ export default function StiggSettings() {
   function cancelNewEnvironment() {
     setPendingEnvironment(null);
     setPendingCustomerId('');
-    setPendingFirstName('');
-    setPendingLastName('');
+    setPendingName('');
     setPendingEmail('');
     setError(null);
   }
@@ -173,15 +191,15 @@ export default function StiggSettings() {
     const customerId = customerIdByEnv[environmentName] ?? '';
     const profile = customerProfileByEnv[environmentName];
     try {
-      await addCustomer(getToken, environmentName, customerId, {
-        firstName: profile?.firstName.trim() || undefined,
-        lastName: profile?.lastName.trim() || undefined,
+      await addCustomer(getToken, environmentName, {
+        customerId,
+        name: profile?.name.trim() || undefined,
         email: profile?.email.trim() || undefined,
       });
       setCustomerIdByEnv((prev) => ({ ...prev, [environmentName]: '' }));
       setCustomerProfileByEnv((prev) => ({
         ...prev,
-        [environmentName]: { firstName: '', lastName: '', email: '' },
+        [environmentName]: { name: '', email: '' },
       }));
       refetch();
     } catch (err) {
@@ -205,6 +223,79 @@ export default function StiggSettings() {
     }
   }
 
+  function startEditCustomer(
+    environmentName: string,
+    customer: { customerId: string; name: string | null; email: string | null },
+  ) {
+    setCustomerErrorByEnv((prev) => ({ ...prev, [environmentName]: null }));
+    setEditingCustomer({
+      environmentName,
+      customerId: customer.customerId,
+      name: customer.name ?? '',
+      email: customer.email ?? '',
+    });
+  }
+
+  function cancelEditCustomer() {
+    setEditingCustomer(null);
+  }
+
+  function updateEditingCustomerField(field: 'name' | 'email', value: string) {
+    setEditingCustomer((prev) => (prev ? { ...prev, [field]: value } : prev));
+  }
+
+  async function handleSaveEditCustomer(event: FormEvent) {
+    event.preventDefault();
+    if (!editingCustomer) return;
+    const { environmentName, customerId, name, email } = editingCustomer;
+    setIsSavingEdit(true);
+    setCustomerErrorByEnv((prev) => ({ ...prev, [environmentName]: null }));
+    try {
+      await updateCustomer(getToken, environmentName, {
+        customerId,
+        name: name.trim() || undefined,
+        email: email.trim() || undefined,
+      });
+      setEditingCustomer(null);
+      refetch();
+    } catch (err) {
+      setCustomerErrorByEnv((prev) => ({
+        ...prev,
+        [environmentName]: err instanceof Error ? err.message : 'Failed to update customer',
+      }));
+    } finally {
+      setIsSavingEdit(false);
+    }
+  }
+
+  function requestArchiveCustomer(environmentName: string, customerId: string) {
+    setCustomerErrorByEnv((prev) => ({ ...prev, [environmentName]: null }));
+    setArchivePending({ environmentName, customerId });
+  }
+
+  function cancelArchiveCustomer() {
+    setArchivePending(null);
+  }
+
+  async function confirmArchiveCustomer() {
+    if (!archivePending) return;
+    const { environmentName, customerId } = archivePending;
+    setIsArchiving(true);
+    try {
+      await archiveCustomer(getToken, environmentName, customerId);
+      setArchivePending(null);
+      refetch();
+    } catch (err) {
+      setCustomerErrorByEnv((prev) => ({
+        ...prev,
+        [environmentName]: err instanceof Error ? err.message : 'Failed to archive customer',
+      }));
+      setArchivePending(null);
+    } finally {
+      setIsArchiving(false);
+    }
+  }
+
   return (
     <div className="app">
       <div className="page-header">
@@ -212,7 +303,7 @@ export default function StiggSettings() {
           <LayersIcon size={22} />
         </span>
         <div className="page-header__text">
-          <h1 className="page-header__title">Stigg Settings</h1>
+          <h1 className="page-header__title">Manage Environments</h1>
           <p className="page-header__subtitle">
             Manage the Stigg environments and customers available to your account.
           </p>
@@ -220,48 +311,48 @@ export default function StiggSettings() {
       </div>
 
       <div className="page-content-wrapper">
-        <div className="page-content stigg-settings">
-          <div className="stigg-settings__layout">
-            <div className="stigg-settings__sidebar">
-              <div className="stigg-settings__env-list">
+        <div className="page-content manage-environments">
+          <div className="manage-environments__layout">
+            <div className="manage-environments__sidebar">
+              <div className="manage-environments__env-list">
                 {environments.map((env) => (
                   <button
                     key={env.name}
                     type="button"
                     className={
                       env.name === selectedEnvironmentName
-                        ? 'stigg-settings__env-item stigg-settings__env-item--selected'
-                        : 'stigg-settings__env-item'
+                        ? 'manage-environments__env-item manage-environments__env-item--selected'
+                        : 'manage-environments__env-item'
                     }
                     onClick={() => setSelectedEnvironmentOverride(env.name)}
                   >
                     <span>{env.name}</span>
                     {env.isActive && (
-                      <span className="stigg-settings__env-item-dot" aria-label="Active" />
+                      <span className="manage-environments__env-item-dot" aria-label="Active" />
                     )}
                   </button>
                 ))}
               </div>
               <button
                 type="button"
-                className="stigg-settings__add-env-trigger"
+                className="manage-environments__add-env-trigger"
                 onClick={openAddEnvironment}
               >
                 + Add environment
               </button>
               {error && !pendingEnvironment && !isAddingEnvironment && (
-                <p className="stigg-settings__error">{error}</p>
+                <p className="manage-environments__error">{error}</p>
               )}
             </div>
 
-            <div className="stigg-settings__detail">
+            <div className="manage-environments__detail">
               {selectedEnv ? (
                 <>
-                  <div className="stigg-settings__detail-header">
+                  <div className="manage-environments__detail-header">
                     <h2>{selectedEnv.name}</h2>
-                    <div className="stigg-settings__detail-actions">
+                    <div className="manage-environments__detail-actions">
                       {selectedEnv.isActive ? (
-                        <span className="stigg-settings__active-badge">Active</span>
+                        <span className="manage-environments__active-badge">Active</span>
                       ) : (
                         <button type="button" onClick={() => handleSelect(selectedEnv.name)}>
                           Set as Active
@@ -270,7 +361,7 @@ export default function StiggSettings() {
                       {selectedEnv.name !== 'Default' && !selectedEnv.isActive && (
                         <button
                           type="button"
-                          className="stigg-settings__remove"
+                          className="manage-environments__remove"
                           onClick={() => setEnvPendingRemoval(selectedEnv.name)}
                         >
                           Remove
@@ -279,31 +370,118 @@ export default function StiggSettings() {
                     </div>
                   </div>
 
-                  <div className="stigg-settings__customers">
-                    <p className="stigg-settings__customers-label">Customers</p>
-                    {selectedEnv.customers.map((customer) => (
-                      <div key={customer.customerId} className="stigg-settings__customer-row">
-                        <span>
-                          {customer.customerId}
-                          {!customer.stiggOnboarded && ' (provisioning…)'}
-                        </span>
-                        {customer.isActive ? (
-                          <span className="stigg-settings__active-badge">Active</span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleSelectCustomer(selectedEnv.name, customer.customerId)
+                  <div className="manage-environments__customers">
+                    <p className="manage-environments__customers-label">
+                      Customers{selectedEnv.customers.length > 0 && ` (${selectedEnv.customers.length})`}
+                    </p>
+                    {selectedEnv.customers.length === 0 && (
+                      <p className="manage-environments__empty">No customers yet.</p>
+                    )}
+                    {selectedEnv.customers.map((customer) =>
+                      editingCustomer?.environmentName === selectedEnv.name &&
+                      editingCustomer.customerId === customer.customerId ? (
+                        <form
+                          key={customer.customerId}
+                          className="manage-environments__customer-row manage-environments__customer-row--editing"
+                          onSubmit={handleSaveEditCustomer}
+                        >
+                          <input
+                            placeholder="Name (optional)"
+                            value={editingCustomer.name}
+                            onChange={(event) =>
+                              updateEditingCustomerField('name', event.target.value)
                             }
-                          >
-                            Select
+                            autoFocus
+                          />
+                          <input
+                            placeholder="Email (optional)"
+                            value={editingCustomer.email}
+                            onChange={(event) =>
+                              updateEditingCustomerField('email', event.target.value)
+                            }
+                          />
+                          <button type="submit" disabled={isSavingEdit}>
+                            {isSavingEdit ? 'Saving…' : 'Save'}
                           </button>
-                        )}
-                      </div>
-                    ))}
+                          <button type="button" onClick={cancelEditCustomer}>
+                            Cancel
+                          </button>
+                        </form>
+                      ) : (
+                        <div key={customer.customerId} className="manage-environments__customer-row">
+                          <div className="manage-environments__customer-info">
+                            <span className="manage-environments__customer-avatar">
+                              <UserIcon size={15} />
+                            </span>
+                            <div className="manage-environments__customer-text">
+                              {customer.name && (
+                                <span className="manage-environments__customer-name">
+                                  {customer.name}
+                                </span>
+                              )}
+                              <span className="manage-environments__customer-id">
+                                {customer.customerId}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="manage-environments__customer-actions">
+                            {customer.isActive ? (
+                              <span className="manage-environments__active-badge">Active</span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleSelectCustomer(selectedEnv.name, customer.customerId)
+                                }
+                              >
+                                Select
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => startEditCustomer(selectedEnv.name, customer)}
+                            >
+                              Edit
+                            </button>
+                            {archivePending?.environmentName === selectedEnv.name &&
+                            archivePending.customerId === customer.customerId ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className="manage-environments__remove"
+                                  onClick={confirmArchiveCustomer}
+                                  disabled={isArchiving}
+                                >
+                                  {isArchiving ? 'Archiving…' : 'Confirm archive?'}
+                                </button>
+                                <button type="button" onClick={cancelArchiveCustomer}>
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                type="button"
+                                className="manage-environments__remove"
+                                disabled={customer.isActive}
+                                title={
+                                  customer.isActive
+                                    ? 'Set another customer as active before archiving this one'
+                                    : undefined
+                                }
+                                onClick={() =>
+                                  requestArchiveCustomer(selectedEnv.name, customer.customerId)
+                                }
+                              >
+                                Archive
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ),
+                    )}
 
                     <form
-                      className="stigg-settings__customer-form"
+                      className="manage-environments__customer-form"
                       onSubmit={(event) => handleAddCustomer(event, selectedEnv.name)}
                     >
                       <input
@@ -317,17 +495,10 @@ export default function StiggSettings() {
                         }
                       />
                       <input
-                        placeholder="First name (optional)"
-                        value={customerProfileByEnv[selectedEnv.name]?.firstName ?? ''}
+                        placeholder="Name (optional)"
+                        value={customerProfileByEnv[selectedEnv.name]?.name ?? ''}
                         onChange={(event) =>
-                          updateCustomerProfileField(selectedEnv.name, 'firstName', event.target.value)
-                        }
-                      />
-                      <input
-                        placeholder="Last name (optional)"
-                        value={customerProfileByEnv[selectedEnv.name]?.lastName ?? ''}
-                        onChange={(event) =>
-                          updateCustomerProfileField(selectedEnv.name, 'lastName', event.target.value)
+                          updateCustomerProfileField(selectedEnv.name, 'name', event.target.value)
                         }
                       />
                       <input
@@ -341,14 +512,14 @@ export default function StiggSettings() {
                     </form>
 
                     {customerErrorByEnv[selectedEnv.name] && (
-                      <p className="stigg-settings__error">
+                      <p className="manage-environments__error">
                         {customerErrorByEnv[selectedEnv.name]}
                       </p>
                     )}
                   </div>
                 </>
               ) : (
-                <p className="stigg-settings__empty">No environments yet.</p>
+                <p className="manage-environments__empty">No environments yet.</p>
               )}
             </div>
           </div>
@@ -366,7 +537,7 @@ export default function StiggSettings() {
                 ×
               </button>
               <h2 className="paywall-modal__title">Add environment</h2>
-              <form className="stigg-settings__form" onSubmit={handleStartAdd}>
+              <form className="manage-environments__form" onSubmit={handleStartAdd}>
                 <input
                   placeholder="Name"
                   value={name}
@@ -393,7 +564,7 @@ export default function StiggSettings() {
 
         {pendingEnvironment && (
           <div className="paywall-backdrop">
-            <div className="paywall-modal stigg-settings__modal--wide">
+            <div className="paywall-modal manage-environments__modal--wide">
               <button
                 type="button"
                 className="paywall-modal__close"
@@ -407,33 +578,27 @@ export default function StiggSettings() {
                 Every environment needs at least one Stigg customer. Add one for{' '}
                 <strong>{pendingEnvironment.name}</strong> to finish creating it.
               </p>
-              <form className="stigg-settings__form" onSubmit={handleCreateEnvironment}>
+              <form className="manage-environments__form" onSubmit={handleCreateEnvironment}>
                 <input
-                  className="stigg-settings__confirm-input"
+                  className="manage-environments__confirm-input"
                   value={pendingCustomerId}
                   onChange={(event) => setPendingCustomerId(event.target.value)}
                   placeholder="Customer ID"
                   autoFocus
                 />
                 <input
-                  className="stigg-settings__confirm-input"
-                  value={pendingFirstName}
-                  onChange={(event) => setPendingFirstName(event.target.value)}
-                  placeholder="First name (optional)"
+                  className="manage-environments__confirm-input"
+                  value={pendingName}
+                  onChange={(event) => setPendingName(event.target.value)}
+                  placeholder="Name (optional)"
                 />
                 <input
-                  className="stigg-settings__confirm-input"
-                  value={pendingLastName}
-                  onChange={(event) => setPendingLastName(event.target.value)}
-                  placeholder="Last name (optional)"
-                />
-                <input
-                  className="stigg-settings__confirm-input"
+                  className="manage-environments__confirm-input"
                   value={pendingEmail}
                   onChange={(event) => setPendingEmail(event.target.value)}
                   placeholder="Email (optional)"
                 />
-                {error && <p className="stigg-settings__error">{error}</p>}
+                {error && <p className="manage-environments__error">{error}</p>}
                 <button
                   type="submit"
                   className="paywall-modal__cta"
@@ -463,7 +628,7 @@ export default function StiggSettings() {
                 environment name to confirm.
               </p>
               <input
-                className="stigg-settings__confirm-input"
+                className="manage-environments__confirm-input"
                 value={confirmText}
                 onChange={(event) => setConfirmText(event.target.value)}
                 placeholder={envPendingRemoval}

@@ -15,9 +15,9 @@ async function list(req, res) {
 }
 
 async function add(req, res) {
-  const { name, clientApiKey, serverApiKey, customerId, firstName, lastName, email } = req.body;
+  const { name, clientApiKey, serverApiKey, customer } = req.body;
 
-  if (!name || !clientApiKey || !serverApiKey || !customerId) {
+  if (!name || !clientApiKey || !serverApiKey || !customer?.customerId) {
     return res
       .status(400)
       .json({ error: 'name, clientApiKey, serverApiKey, and customerId are required' });
@@ -33,10 +33,7 @@ async function add(req, res) {
     const environments = await environmentsService.addEnvironment(req.clerkId, name, {
       clientApiKey,
       serverApiKey,
-      customerId,
-      firstName,
-      lastName,
-      email,
+      customer,
     });
     return res.status(201).json({ environments });
   } catch (error) {
